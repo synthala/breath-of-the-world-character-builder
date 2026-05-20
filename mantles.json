@@ -43,6 +43,18 @@
           "amount": 1
         }
       ]
+    },
+    {
+      "id": "reag-regan",
+      "name": "Reag Regan",
+      "category": "Innkeeper/Storylistener",
+      "description": "You are Reag Regan. You have spent your childhood in the forge, leading to a strong build and agile movements. +2 to Athletics. ",
+      "bonuses": [
+        {
+          "target": "athletics",
+          "amount": 2
+        }
+      ]
     }
   ]
 }
