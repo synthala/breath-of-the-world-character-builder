@@ -37,6 +37,10 @@
         {
           "target": "history",
           "amount": 1
+        },
+        {
+          "target": "performance",
+          "amount": 1
         }
       ]
     }

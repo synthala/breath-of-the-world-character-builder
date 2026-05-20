@@ -362,7 +362,7 @@
       position: absolute;
       top: 0;
       left: 0;
-      width: 42px;
+      width: 54px;
       min-height: 120px;
       padding: 8px 6px;
       writing-mode: vertical-rl;
@@ -431,6 +431,7 @@
     }
 
     .combat-skill-row {
+      position: relative;
       padding: 8px 0;
       border-bottom: 1px solid #d9d1c4;
     }
@@ -442,11 +443,15 @@
     .combat-skill-stat {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
     }
 
     .combat-skill-stat-code {
       min-width: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .combat-skill-modifier {
@@ -687,7 +692,7 @@
       width: 280px;
       padding: 12px;
       border: 2px solid var(--line);
-      background: rgba(247, 243, 235, 0.78);
+      background: #f7f3eb;
       min-height: 84px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
     }
@@ -810,9 +815,46 @@
     }
 
     .skill-row {
+      position: relative;
       padding: 8px 4px;
       border-bottom: 1px solid #d9d1c4;
       transition: grid-template-columns 300ms ease, gap 300ms ease, padding 260ms ease, transform 260ms ease;
+    }
+
+    .skill-row.has-mantle-bonus,
+    .combat-skill-row.has-mantle-bonus {
+      background: rgba(83, 137, 96, 0.18);
+      box-shadow: inset 4px 0 0 #538960;
+      padding-left: 12px;
+      padding-right: 10px;
+    }
+
+    .skill-row.has-mantle-bonus {
+      grid-template-columns: minmax(0, 1fr) 66px 78px minmax(52px, auto);
+    }
+
+    .combat-skill-row.has-mantle-bonus {
+      grid-template-columns: minmax(0, 1fr) 112px 78px minmax(52px, auto);
+    }
+
+    .skill-row.has-mantle-bonus input,
+    .combat-skill-row.has-mantle-bonus input {
+      border-color: #538960;
+      background: rgba(237, 249, 239, 0.9);
+    }
+
+    .mantle-bonus {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      padding: 7px 10px;
+      border: 2px solid #538960;
+      background: rgba(237, 249, 239, 0.95);
+      color: #244b2c;
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1;
     }
 
     .skill-name {
@@ -933,6 +975,11 @@
       .level-readout {
         grid-template-columns: 1fr;
       }
+
+      .skill-row.has-mantle-bonus,
+      .combat-skill-row.has-mantle-bonus {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media print {
@@ -998,14 +1045,14 @@
     <div class="layout">
       <section class="panel level-box">
         <h2>Level</h2>
-        <p class="help">Level 1 starts with 2 feats, 4 spendable skill points, 0 combat skill points, and the Level 1 attribute cap. Fresh sheets begin all attributes at d4.</p>
+        <p class="help">Level 1 starts with 1 feat, 4 spendable skill points, 0 combat skill points, and the Level 1 attribute cap. Fresh sheets begin all attributes at d4.</p>
         <div class="level-readout" id="level-readout">
-          <div class="level-stat"><strong id="feat-total">2</strong><span>Feats Left</span></div>
+          <div class="level-stat"><strong id="feat-total">1</strong><span>Feats Left</span></div>
           <div class="level-stat"><strong id="skill-point-total">4</strong><span>Skill Points Left</span></div>
           <div class="level-stat"><strong id="combat-point-total">0</strong><span>Combat Points Left</span></div>
         </div>
         <ul class="level-rules">
-          <li><strong>Level 1:</strong> 2 feats, 4 skill points, max upgraded attributes of 2d10, 1d8, and 2d6; all remaining attributes stay d4.</li>
+          <li><strong>Level 1:</strong> 1 feat, 4 skill points, max upgraded attributes of 2d10, 1d8, and 2d6; all remaining attributes stay d4.</li>
           <li><strong>Levels 2+:</strong> 3 skill points and 1 combat skill point per level.</li>
           <li><strong>Feat progression:</strong> gain 1 feat every other level after Level 1.</li>
         </ul>
@@ -1455,13 +1502,45 @@
         "id": "keal-al'taanri",
         "name": "Keal al'Taanri",
         "category": "",
-        "description": "You are Keal al'Taanri. Gain +2 to the Marksman combat skill."
+        "description": "You are Keal al'Taanri. Through countless hours of guidance and practice with Jorin, gain +2 to the Marksman combat skill.",
+        "bonuses": [
+          {
+            "target": "marksmanModifier",
+            "amount": 2
+          }
+        ]
       },
       {
         "id": "janiel-errai",
         "name": "Janiel Errai",
         "category": "",
-        "description": "You are Janiel Errai. Gain +1 to Animal Handling and +1 to Marksman combat skill."
+        "description": "You are Janiel Errai. Through years spent spinning tales, stirring trouble, and talking your way out of both, gain +1 to Persuasion. You also spent long afternoons beneath open skies watching over the flock with a sling ever at your side, gain +1 to the Marksman combat skill.",
+        "bonuses": [
+          {
+            "target": "persuasion",
+            "amount": 1
+          },
+          {
+            "target": "marksmanModifier",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "isidor-hearthwell",
+        "name": "Isidor Hearthwell",
+        "category": "",
+        "description": "You are Isidor Hearthwell. You have been trained in social graces, ettiquette, and cultural skills to become a proper lady and your eyes fill with wonder when hearing tales of legends. Gain +1 to Performance and +1 to History.",
+        "bonuses": [
+          {
+            "target": "history",
+            "amount": 1
+          },
+          {
+            "target": "performance",
+            "amount": 1
+          }
+        ]
       }
     ];
     let mantles = [...FALLBACK_MANTLES];
@@ -1533,7 +1612,9 @@
       const fields = {};
 
       document.querySelectorAll("input[name], select[name], textarea[name]").forEach((element) => {
-        if (element.type === "number") {
+        if (element.matches(".skills-list input[type='number'], .combat-skill-modifier")) {
+          fields[element.name] = String(getPointValue(element));
+        } else if (element.type === "number") {
           fields[element.name] = element.value;
         } else {
           fields[element.name] = element.value;
@@ -1582,7 +1663,15 @@
           id: String(mantle.id || "").trim(),
           name: String(mantle.name || "").trim(),
           category: String(mantle.category || "General").trim(),
-          description: String(mantle.description || "").trim()
+          description: String(mantle.description || "").trim(),
+          bonuses: Array.isArray(mantle.bonuses)
+            ? mantle.bonuses
+              .map((bonus) => ({
+                target: String(bonus.target || "").trim(),
+                amount: Math.max(0, Math.floor(Number(bonus.amount) || 0))
+              }))
+              .filter((bonus) => bonus.target && bonus.amount > 0)
+            : []
         }))
         .filter((mantle) => mantle.id && mantle.name && mantle.description);
     }
@@ -1682,7 +1771,7 @@
     }
 
     function getTotalFeatPicks(level = getCharacterLevel()) {
-      return 2 + Math.floor((level - 1) / 2);
+      return 1 + Math.floor((level - 1) / 2);
     }
 
     function enforceFeatBudget(totalFeats) {
@@ -1694,14 +1783,19 @@
       return true;
     }
 
+    function getMantleBonus(input) {
+      return Math.max(0, Math.floor(Number(input.dataset.mantleBonus) || 0));
+    }
+
     function getPointValue(input) {
-      return Math.max(0, Math.floor(Number(input.value) || 0));
+      return Math.max(0, Math.floor(Number(input.value) || 0) - getMantleBonus(input));
     }
 
     function normalizePointInput(input) {
+      const bonus = getMantleBonus(input);
       input.min = "0";
       input.step = "1";
-      input.value = String(getPointValue(input));
+      input.value = String(getPointValue(input) + bonus);
     }
 
     function getSpentPoints(inputs) {
@@ -1728,7 +1822,7 @@
 
         const currentValue = getPointValue(input);
         const reduction = Math.min(currentValue, overspent);
-        input.value = String(currentValue - reduction);
+        input.value = String(currentValue - reduction + getMantleBonus(input));
         overspent -= reduction;
       });
 
@@ -1852,6 +1946,58 @@
 
         if (statSelect && dieBadge) {
           dieBadge.textContent = statSelect.value;
+        }
+      });
+    }
+
+    function clearMantleBonuses() {
+      [...skillPointInputs, ...combatSkillInputs].forEach((input) => {
+        const row = input.closest(".skill-row, .combat-skill-row");
+        const baseValue = getPointValue(input);
+
+        input.value = String(baseValue);
+        delete input.dataset.mantleBonus;
+        input.title = "";
+
+        if (row) {
+          row.classList.remove("has-mantle-bonus");
+          row.querySelector(".mantle-bonus")?.remove();
+        }
+      });
+    }
+
+    function applyMantleBonuses() {
+      clearMantleBonuses();
+
+      const mantle = mantles.find((entry) => entry.id === state.activeMantleId);
+
+      if (!mantle || !Array.isArray(mantle.bonuses)) {
+        return;
+      }
+
+      mantle.bonuses.forEach((bonus) => {
+        const input = document.querySelector(`[name="${bonus.target}"]`);
+        const amount = Math.max(0, Math.floor(Number(bonus.amount) || 0));
+
+        if (!input || amount <= 0) {
+          return;
+        }
+
+        const row = input.closest(".skill-row, .combat-skill-row");
+        const baseValue = Math.max(0, Math.floor(Number(input.value) || 0));
+
+        input.dataset.mantleBonus = String(amount);
+        input.value = String(baseValue + amount);
+        input.title = `Includes +${amount} from ${mantle.name}.`;
+
+        if (row) {
+          row.classList.add("has-mantle-bonus");
+
+          const bonusBadge = document.createElement("span");
+          bonusBadge.className = "mantle-bonus";
+          bonusBadge.textContent = `+${amount}`;
+          bonusBadge.title = `${mantle.name} bonus`;
+          row.appendChild(bonusBadge);
         }
       });
     }
@@ -2071,6 +2217,7 @@
       animatePanelGrowth(mantlePanel, () => {
         buildMantleSelect();
         renderMantleDescription();
+        updateLevelProgression();
       });
       saveState();
     }
@@ -2207,12 +2354,14 @@
       animatePanelGrowth(mantlePanel, () => {
         buildMantleSelect();
         renderMantleDescription();
+        updateLevelProgression();
       });
       saveState();
     }
 
     function renderMantleDescription() {
       mantleDescriptionsNode.innerHTML = "";
+      applyMantleBonuses();
 
       const mantle = mantles.find((entry) => entry.id === state.activeMantleId);
 
