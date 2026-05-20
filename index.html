@@ -14,6 +14,7 @@
       --accent: #d7c5a4;
       --accent-strong: #c6ad81;
       --panel-gap: 18px;
+      --ui-scale: 0.9;
     }
 
     * {
@@ -43,6 +44,7 @@
       z-index: 1;
       width: min(980px, calc(100vw - 24px));
       margin: 24px auto;
+      zoom: var(--ui-scale);
     }
 
     .page {
@@ -301,7 +303,7 @@
 
     .combat-drawer {
       position: fixed;
-      top: 130px;
+      top: 112px;
       right: 0;
       z-index: 60;
       width: min(420px, calc(100vw - 52px));
@@ -372,7 +374,7 @@
     .combat-skills-header,
     .combat-skill-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 64px 78px;
+      grid-template-columns: minmax(0, 1fr) 112px 78px;
       gap: 8px;
       align-items: center;
     }
@@ -393,6 +395,22 @@
 
     .combat-skill-row strong {
       font-size: 0.95rem;
+    }
+
+    .combat-skill-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .combat-skill-stat-code {
+      min-width: 44px;
+    }
+
+    .combat-skill-modifier {
+      padding: 8px 10px;
+      text-align: center;
+      font-weight: 700;
     }
 
     .panel {
@@ -772,7 +790,7 @@
 
       .combat-drawer {
         position: fixed;
-        top: 96px;
+        top: 84px;
         left: auto;
         right: 0;
       }
@@ -791,7 +809,7 @@
       }
 
       .combat-drawer {
-        top: 72px;
+        top: 60px;
         width: min(360px, calc(100vw - 48px));
       }
 
@@ -1107,17 +1125,17 @@
         <div class="hp-row">
           <div>
             <label for="current-hp">Current HP</label>
-            <input id="current-hp" name="currentHp" type="number" value="10" min="0">
+            <input id="current-hp" name="currentHp" type="number" value="14" min="0">
           </div>
           <div>
             <label for="max-hp">Max HP</label>
-            <input id="max-hp" name="maxHp" type="number" value="10" min="1">
+            <input id="max-hp" name="maxHp" type="number" value="14" min="1" readonly aria-readonly="true" title="Max HP is 10 plus half your Constitution die.">
           </div>
         </div>
         <div class="healthbar" aria-label="Health">
           <div class="healthbar-fill" id="healthbar-fill"></div>
         </div>
-        <p class="healthbar-text" id="healthbar-text">10 / 10 HP</p>
+        <p class="healthbar-text" id="healthbar-text">14 / 14 HP</p>
       <div class="combat-skills">
         <h2>Combat Skills</h2>
         <div class="combat-skills-header">
@@ -1126,39 +1144,68 @@
           <div>Modifier</div>
         </div>
         <div class="combat-skill-row" data-stat-name="strengthDie">
-          <strong>Swordsmanship</strong>
-          <div class="die-badge">STR</div>
-          <div class="die-badge combat-skill-die">d10</div>
-        </div>
-        <div class="combat-skill-row" data-stat-name="dexterityDie">
-          <strong>Archery</strong>
-          <div class="die-badge">DEX</div>
-          <div class="die-badge combat-skill-die">d12</div>
+          <strong>Bladecraft</strong>
+          <div class="combat-skill-stat">
+            <div class="die-badge combat-skill-stat-code">STR</div>
+            <div class="die-badge combat-skill-die">d10</div>
+          </div>
+          <input class="combat-skill-modifier" name="bladecraftModifier" type="number" value="0" step="1" aria-label="Bladecraft modifier">
         </div>
         <div class="combat-skill-row" data-stat-name="strengthDie">
-          <strong>Brawling</strong>
-          <div class="die-badge">STR</div>
-          <div class="die-badge combat-skill-die">d10</div>
+          <strong>Longarms</strong>
+          <div class="combat-skill-stat">
+            <div class="die-badge combat-skill-stat-code">STR</div>
+            <div class="die-badge combat-skill-die">d10</div>
+          </div>
+          <input class="combat-skill-modifier" name="longarmsModifier" type="number" value="0" step="1" aria-label="Longarms modifier">
+        </div>
+        <div class="combat-skill-row" data-stat-name="strengthDie">
+          <strong>Heavy Weapons</strong>
+          <div class="combat-skill-stat">
+            <div class="die-badge combat-skill-stat-code">STR</div>
+            <div class="die-badge combat-skill-die">d10</div>
+          </div>
+          <input class="combat-skill-modifier" name="heavyWeaponsModifier" type="number" value="0" step="1" aria-label="Heavy Weapons modifier">
         </div>
         <div class="combat-skill-row" data-stat-name="dexterityDie">
-          <strong>Evasion</strong>
-          <div class="die-badge">DEX</div>
-          <div class="die-badge combat-skill-die">d12</div>
+          <strong>Duelist Arts</strong>
+          <div class="combat-skill-stat">
+            <div class="die-badge combat-skill-stat-code">DEX</div>
+            <div class="die-badge combat-skill-die">d12</div>
+          </div>
+          <input class="combat-skill-modifier" name="duelistArtsModifier" type="number" value="0" step="1" aria-label="Duelist Arts modifier">
         </div>
-        <div class="combat-skill-row" data-stat-name="intelligenceDie">
-          <strong>Tactics</strong>
-          <div class="die-badge">INT</div>
-          <div class="die-badge combat-skill-die">d6</div>
+        <div class="combat-skill-row" data-stat-name="dexterityDie">
+          <strong>Marksman</strong>
+          <div class="combat-skill-stat">
+            <div class="die-badge combat-skill-stat-code">DEX</div>
+            <div class="die-badge combat-skill-die">d12</div>
+          </div>
+          <input class="combat-skill-modifier" name="marksmanModifier" type="number" value="0" step="1" aria-label="Marksman modifier">
         </div>
-        <div class="combat-skill-row" data-stat-name="wisdomDie">
-          <strong>Awareness</strong>
-          <div class="die-badge">WIS</div>
-          <div class="die-badge combat-skill-die">d20</div>
+        <div class="combat-skill-row" data-stat-name="dexterityDie">
+          <strong>Skirmishing</strong>
+          <div class="combat-skill-stat">
+            <div class="die-badge combat-skill-stat-code">DEX</div>
+            <div class="die-badge combat-skill-die">d12</div>
+          </div>
+          <input class="combat-skill-modifier" name="skirmishingModifier" type="number" value="0" step="1" aria-label="Skirmishing modifier">
         </div>
-        <div class="combat-skill-row" data-stat-name="charismaDie">
-          <strong>Command</strong>
-          <div class="die-badge">CHA</div>
-          <div class="die-badge combat-skill-die">d4</div>
+        <div class="combat-skill-row" data-stat-name="constitutionDie">
+          <strong>Vanguard</strong>
+          <div class="combat-skill-stat">
+            <div class="die-badge combat-skill-stat-code">CON</div>
+            <div class="die-badge combat-skill-die">d8</div>
+          </div>
+          <input class="combat-skill-modifier" name="vanguardModifier" type="number" value="0" step="1" aria-label="Vanguard modifier">
+        </div>
+        <div class="combat-skill-row" data-stat-name="constitutionDie">
+          <strong>Shieldcraft</strong>
+          <div class="combat-skill-stat">
+            <div class="die-badge combat-skill-stat-code">CON</div>
+            <div class="die-badge combat-skill-die">d8</div>
+          </div>
+          <input class="combat-skill-modifier" name="shieldcraftModifier" type="number" value="0" step="1" aria-label="Shieldcraft modifier">
         </div>
       </div>
     </section>
@@ -1495,6 +1542,19 @@
         : "linear-gradient(90deg, #8c2f2a 0%, #c66b44 55%, #d7c5a4 100%)";
     }
 
+    function updateDerivedMaxHp() {
+      const constitutionSelect = document.querySelector('[name="constitutionDie"]');
+      const constitutionDie = constitutionSelect ? constitutionSelect.value : "d8";
+      const calculatedMaxHp = 10 + Math.floor(getDieRank(constitutionDie) / 2);
+      const currentHp = Math.max(0, Number(currentHpInput.value) || 0);
+
+      maxHpInput.value = String(calculatedMaxHp);
+
+      if (currentHp > calculatedMaxHp) {
+        currentHpInput.value = String(calculatedMaxHp);
+      }
+    }
+
     function updateCombatSkillDice() {
       combatSkillRows.forEach((row) => {
         const statSelect = document.querySelector(`[name="${row.dataset.statName}"]`);
@@ -1766,6 +1826,7 @@
         renderActiveFeats();
         renderFeatDescriptions();
         updateAllocationSummary();
+        updateDerivedMaxHp();
         updateHealthbar();
         updateCombatSkillDice();
         return;
@@ -1786,6 +1847,7 @@
       renderActiveFeats();
       renderFeatDescriptions();
       updateAllocationSummary();
+      updateDerivedMaxHp();
       updateHealthbar();
       updateCombatSkillDice();
     }
@@ -1819,6 +1881,7 @@
           renderActiveFeats();
           renderFeatDescriptions();
           updateAllocationSummary();
+          updateDerivedMaxHp();
           updateHealthbar();
           updateCombatSkillDice();
           saveState();
@@ -1852,8 +1915,8 @@
       document.querySelector('[name="intelligenceDie"]').value = "d6";
       document.querySelector('[name="wisdomDie"]').value = "d20";
       document.querySelector('[name="charismaDie"]').value = "d4";
-      currentHpInput.value = "10";
-      maxHpInput.value = "10";
+      updateDerivedMaxHp();
+      currentHpInput.value = maxHpInput.value;
 
       state.activeFeatIds = [];
       state.characterImage = "";
@@ -1944,12 +2007,14 @@
     document.querySelectorAll("input[name], select[name], textarea[name]").forEach((element) => {
       element.addEventListener("input", () => {
         updateAllocationSummary();
+        updateDerivedMaxHp();
         updateHealthbar();
         updateCombatSkillDice();
         saveState();
       });
       element.addEventListener("change", () => {
         updateAllocationSummary();
+        updateDerivedMaxHp();
         updateHealthbar();
         updateCombatSkillDice();
         saveState();

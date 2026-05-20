@@ -95,6 +95,30 @@
       "name": "Trailborn",
       "category": "Hunter / Wilderness",
       "description": "You were shaped by long roads, cold mornings, and silent forests. Gain Advantage on tracking, navigation, and identifying signs of creatures or danger. During travel, your group moves more quietly and is less likely to become lost. Once per rest, reroll a failed Survival or Awareness check."
+    },
+    {
+      "id": "forgehand",
+      "name": "Forgehand",
+      "category": "Blacksmith / Craftsman",
+      "description": "Years at the anvil have strengthened your arms and sharpened your patience. Gain Advantage on checks involving metalwork, repairing equipment, or identifying weapon and armor quality. During rests, you may repair damaged mundane gear."
+    },
+    {
+      "id": "embersoul",
+      "name": "Embersoul",
+      "category": "Blacksmith / Craftsman",
+      "description": "You are deeply familiar with heat, flame, and endurance. Gain resistance against extreme heat and smoke. Once per rest, temporarily reinforce a weapon or tool, granting it improved effectiveness for a single encounter."
+    },
+    {
+      "id": "ringing-anvil",
+      "name": "Ringing Anvil",
+      "category": "Blacksmith / Craftsman",
+      "description": "The rhythm of hammer and steel taught you discipline and precision. Gain Advantage on concentration, crafting, or timing-based checks. Once per combat, steady yourself and ignore distraction or interruption during your action."
+    },
+    {
+      "id": "ironbound",
+      "name": "Ironbound",
+      "category": "Blacksmith / Craftsman",
+      "description": "Your body has been hardened by labor, soot, and sparks. Gain +2 maximum HP. You recover from physical exhaustion more quickly than most, and mundane injuries heal cleaner under your care."
     }
   ]
 }
