@@ -3,7 +3,7 @@
     {
       "id": "keal-al'taanri",
       "name": "Keal al'Taanri",
-      "category": "",
+      "category": "Woodsman",
       "description": "You are Keal al'Taanri. Through countless hours of guidance and practice with Jorin, gain +2 to the Marksman combat skill.",
       "bonuses": [
         {
@@ -15,7 +15,7 @@
     {
       "id": "janiel-errai",
       "name": "Janiel Errai",
-      "category": "",
+      "category": "Sheepherder/Mischief Maker",
       "description": "You are Janiel Errai. Through years spent spinning tales, stirring trouble, and talking your way out of both, gain +1 to Persuasion. You also spent long afternoons beneath open skies watching over the flock with a sling ever at your side, gain +1 to the Marksman combat skill.",
       "bonuses": [
         {
@@ -31,7 +31,7 @@
     {
       "id": "isidor-hearthwell",
       "name": "Isidor Hearthwell",
-      "category": "",
+      "category": "Innkeeper/Storylistener",
       "description": "You are Isidor Hearthwell. You have been trained in social graces, ettiquette, and cultural skills to become a proper lady and your eyes fill with wonder when hearing tales of legends. Gain +1 to Performance and +1 to History.",
       "bonuses": [
         {
