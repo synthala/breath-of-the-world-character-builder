@@ -1,0 +1,16 @@
+{
+  "mantles": [
+    {
+      "id": "keal-al'taanri",
+      "name": "Keal al'Taanri",
+      "category": "",
+      "description": "You are Keal al'Taanri. Through countless hours of guidance and practice with Jorin, gain +2 to the Marksman combat skill."
+    },
+    {
+      "id": "janiel-errai",
+      "name": "Janiel Errai",
+      "category": "",
+      "description": "You are Janiel Errai. Through years spent spinning tales, stirring trouble, and talking your way out of both, gain +1 to Persuasion. You also spent long afternoons beneath open skies watching over the flock with a sling ever at your side, gain +1 to the Marksman combat skill."
+    }
+  ]
+}

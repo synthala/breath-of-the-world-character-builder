@@ -103,6 +103,7 @@
     .layout,
     .sheet-title,
     .name-field,
+    .level-field,
     .actions > :not(#toggle-character-image),
     .status,
     .footer-note {
@@ -116,6 +117,7 @@
     .page.is-previewing-character .layout,
     .page.is-previewing-character .sheet-title,
     .page.is-previewing-character .name-field,
+    .page.is-previewing-character .level-field,
     .page.is-previewing-character .actions > :not(#toggle-character-image),
     .page.is-previewing-character .status,
     .page.is-previewing-character .footer-note {
@@ -151,8 +153,8 @@
 
     .name-header {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 14px;
+      grid-template-columns: minmax(0, 1fr) minmax(150px, 0.35fr) minmax(96px, auto);
+      gap: 20px;
       align-items: center;
     }
 
@@ -176,6 +178,26 @@
 
     #character-name::placeholder {
       color: rgba(17, 17, 17, 0.45);
+    }
+
+    .level-field {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 150px;
+    }
+
+    .level-field input {
+      width: 58px;
+      padding: 8px 10px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .level-field label {
+      margin: 0;
+      white-space: nowrap;
     }
 
     .actions {
@@ -289,6 +311,26 @@
       z-index: 20;
       display: grid;
       gap: var(--panel-gap);
+    }
+
+    .character-options {
+      position: relative;
+      z-index: 80;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--panel-gap);
+      grid-column: 1 / -1;
+      align-items: start;
+    }
+
+    .character-options .panel {
+      position: relative;
+      z-index: 1;
+      overflow: visible;
+    }
+
+    .character-options .panel:has(.feat-picker.is-open) {
+      z-index: 140;
     }
 
     .layout > .panel {
@@ -528,6 +570,50 @@
       background: #f3dddd;
     }
 
+    .level-box {
+      display: grid;
+      gap: 12px;
+      grid-column: 1 / -1;
+    }
+
+    .level-readout {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .level-stat {
+      padding: 10px 12px;
+      border: 2px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .level-stat strong {
+      display: block;
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    .level-stat span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .level-rules {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .level-rules strong {
+      color: var(--ink);
+    }
+
     .feats-add-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
@@ -559,7 +645,7 @@
       top: calc(100% + 4px);
       left: 0;
       width: 100%;
-      z-index: 100;
+      z-index: 1000;
       display: grid;
       gap: 6px;
       max-height: 260px;
@@ -575,7 +661,7 @@
     }
 
     .feat-picker.is-open {
-      z-index: 120;
+      z-index: 1200;
     }
 
     .feat-option {
@@ -597,13 +683,18 @@
       position: absolute;
       top: calc(100% + 4px);
       left: calc(100% + 8px);
-      z-index: 110;
+      z-index: 1100;
       width: 280px;
       padding: 12px;
       border: 2px solid var(--line);
       background: rgba(247, 243, 235, 0.78);
       min-height: 84px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    #mantle-picker .feat-hover-preview {
+      right: calc(100% + 8px);
+      left: auto;
     }
 
     .feat-hover-preview[hidden] {
@@ -778,6 +869,7 @@
     @media (max-width: 820px) {
       .layout,
       .lower-layout,
+      .character-options,
       .name-row,
       .name-header,
       .feats-add-row {
@@ -837,7 +929,8 @@
       .stat-row,
       .skills-header,
       .skill-row,
-      .feat-item {
+      .feat-item,
+      .level-readout {
         grid-template-columns: 1fr;
       }
     }
@@ -875,6 +968,10 @@
         <div class="name-row">
           <div class="name-header">
             <p class="sheet-title">Breath of the World Character Sheet</p>
+            <div class="level-field">
+              <label for="character-level">Level</label>
+              <input id="character-level" name="characterLevel" type="number" value="1" min="1" step="1" inputmode="numeric">
+            </div>
             <div class="actions">
               <button type="button" class="icon-button" id="toggle-character-image" aria-label="Show character image" title="Show character image"><span class="eye-icon" aria-hidden="true"></span></button>
               <button type="button" class="menu-toggle" id="actions-menu-toggle" aria-label="Open actions menu" aria-expanded="false" aria-controls="actions-menu">
@@ -899,19 +996,34 @@
       </section>
 
     <div class="layout">
+      <section class="panel level-box">
+        <h2>Level</h2>
+        <p class="help">Level 1 starts with 2 feats, 4 spendable skill points, 0 combat skill points, and the Level 1 attribute cap. Fresh sheets begin all attributes at d4.</p>
+        <div class="level-readout" id="level-readout">
+          <div class="level-stat"><strong id="feat-total">2</strong><span>Feats Left</span></div>
+          <div class="level-stat"><strong id="skill-point-total">4</strong><span>Skill Points Left</span></div>
+          <div class="level-stat"><strong id="combat-point-total">0</strong><span>Combat Points Left</span></div>
+        </div>
+        <ul class="level-rules">
+          <li><strong>Level 1:</strong> 2 feats, 4 skill points, max upgraded attributes of 2d10, 1d8, and 2d6; all remaining attributes stay d4.</li>
+          <li><strong>Levels 2+:</strong> 3 skill points and 1 combat skill point per level.</li>
+          <li><strong>Feat progression:</strong> gain 1 feat every other level after Level 1.</li>
+        </ul>
+      </section>
+
       <div class="left-column">
         <section class="panel">
           <h2>Attributes</h2>
-          <p class="help">Keep the standard 5e abilities, but assign each one a die. Duplicate dice are allowed, and the list auto-sorts from highest die to lowest.</p>
+          <p class="help">Assign each attribute a die. Duplicate dice are allowed, and the list auto-sorts from highest die to lowest.</p>
           <div class="stats-grid" id="stats-grid">
             <div class="stat-row">
               <strong>STR</strong>
               <div class="stat-note">Strength</div>
               <select name="strengthDie" class="stat-select">
-                <option value="d4">d4</option>
+                <option value="d4" selected>d4</option>
                 <option value="d6">d6</option>
                 <option value="d8">d8</option>
-                <option value="d10" selected>d10</option>
+                <option value="d10">d10</option>
                 <option value="d12">d12</option>
                 <option value="d20">d20</option>
               </select>
@@ -920,11 +1032,11 @@
               <strong>DEX</strong>
               <div class="stat-note">Dexterity</div>
               <select name="dexterityDie" class="stat-select">
-                <option value="d4">d4</option>
+                <option value="d4" selected>d4</option>
                 <option value="d6">d6</option>
                 <option value="d8">d8</option>
                 <option value="d10">d10</option>
-                <option value="d12" selected>d12</option>
+                <option value="d12">d12</option>
                 <option value="d20">d20</option>
               </select>
             </div>
@@ -932,9 +1044,9 @@
               <strong>CON</strong>
               <div class="stat-note">Constitution</div>
               <select name="constitutionDie" class="stat-select">
-                <option value="d4">d4</option>
+                <option value="d4" selected>d4</option>
                 <option value="d6">d6</option>
-                <option value="d8" selected>d8</option>
+                <option value="d8">d8</option>
                 <option value="d10">d10</option>
                 <option value="d12">d12</option>
                 <option value="d20">d20</option>
@@ -944,8 +1056,8 @@
               <strong>INT</strong>
               <div class="stat-note">Intelligence</div>
               <select name="intelligenceDie" class="stat-select">
-                <option value="d4">d4</option>
-                <option value="d6" selected>d6</option>
+                <option value="d4" selected>d4</option>
+                <option value="d6">d6</option>
                 <option value="d8">d8</option>
                 <option value="d10">d10</option>
                 <option value="d12">d12</option>
@@ -956,12 +1068,12 @@
               <strong>WIS</strong>
               <div class="stat-note">Wisdom</div>
               <select name="wisdomDie" class="stat-select">
-                <option value="d4">d4</option>
+                <option value="d4" selected>d4</option>
                 <option value="d6">d6</option>
                 <option value="d8">d8</option>
                 <option value="d10">d10</option>
                 <option value="d12">d12</option>
-                <option value="d20" selected>d20</option>
+                <option value="d20">d20</option>
               </select>
             </div>
             <div class="stat-row">
@@ -980,26 +1092,10 @@
           <div class="allocation-summary" id="allocation-summary"></div>
         </section>
 
-        <section class="panel" id="feats-panel">
-          <h2>Feats</h2>
-          <p class="help">Choose a feat to add it to this character sheet. Added feats show their descriptions below and can be removed from the list.</p>
-          <div class="feats-add-row">
-            <div class="feat-picker">
-              <button type="button" class="feat-picker-toggle" id="feat-picker-toggle" aria-haspopup="listbox" aria-expanded="false">Choose a feat</button>
-              <div class="feat-picker-menu" id="feat-picker-menu" role="listbox" hidden></div>
-              <div class="feat-hover-preview" id="feat-hover-preview" hidden>
-                <h3>Feat Preview</h3>
-                <p>Hover a feat in the dropdown to preview its description before adding it.</p>
-              </div>
-            </div>
-          </div>
-          <div class="active-feats" id="active-feats"></div>
-          <div class="feat-description-list" id="feat-description-list"></div>
-        </section>
       </div>
 
       <section class="panel">
-        <h2>5e Skills</h2>
+        <h2>Skills</h2>
         <p class="help">All skills start at 0. Use the number box for the modifier you want tied to that skill in your hybrid system.</p>
         <div class="skills-header">
           <div>Skill</div>
@@ -1099,6 +1195,41 @@
           </div>
         </div>
       </section>
+
+      <div class="character-options">
+        <section class="panel" id="feats-panel">
+          <h2>Feats</h2>
+          <p class="help">Choose a feat to add it to this character sheet. Added feats show their descriptions below and can be removed from the list.</p>
+          <div class="feats-add-row">
+            <div class="feat-picker">
+              <button type="button" class="feat-picker-toggle" id="feat-picker-toggle" aria-haspopup="listbox" aria-expanded="false">Choose a feat</button>
+              <div class="feat-picker-menu" id="feat-picker-menu" role="listbox" hidden></div>
+              <div class="feat-hover-preview" id="feat-hover-preview" hidden>
+                <h3>Feat Preview</h3>
+                <p>Hover a feat in the dropdown to preview its description before adding it.</p>
+              </div>
+            </div>
+          </div>
+          <div class="active-feats" id="active-feats"></div>
+          <div class="feat-description-list" id="feat-description-list"></div>
+        </section>
+
+        <section class="panel" id="mantle-panel">
+          <h2>Mantle</h2>
+          <p class="help">A mantle is the character's presence, demeanor, identity, and reputation. It works like a feat, but grants bonuses to skills or combat skills.</p>
+          <div class="feats-add-row">
+            <div class="feat-picker" id="mantle-picker">
+              <button type="button" class="feat-picker-toggle" id="mantle-picker-toggle" aria-haspopup="listbox" aria-expanded="false">Choose a mantle</button>
+              <div class="feat-picker-menu" id="mantle-picker-menu" role="listbox" hidden></div>
+              <div class="feat-hover-preview" id="mantle-hover-preview" hidden>
+                <h3>Mantle Preview</h3>
+                <p>Hover a mantle in the dropdown to preview its bonuses before choosing it.</p>
+              </div>
+            </div>
+          </div>
+          <div class="feat-description-list" id="mantle-description-list"></div>
+        </section>
+      </div>
 
     </div>
 
@@ -1215,6 +1346,7 @@
   <script>
     const STORAGE_KEY = "breath-character-sheet-state";
     const FEATS_FILE = "feats.json";
+    const MANTLES_FILE = "mantles.json";
     const CHARACTER_SAVE_FOLDER = "character-saves";
     const DEFAULT_CHARACTER_SHEET_FILE = "character-sheet.json";
 
@@ -1318,8 +1450,25 @@
     ];
     let feats = [...FALLBACK_FEATS];
 
+    const FALLBACK_MANTLES = [
+      {
+        "id": "keal-al'taanri",
+        "name": "Keal al'Taanri",
+        "category": "",
+        "description": "You are Keal al'Taanri. Gain +2 to the Marksman combat skill."
+      },
+      {
+        "id": "janiel-errai",
+        "name": "Janiel Errai",
+        "category": "",
+        "description": "You are Janiel Errai. Gain +1 to Animal Handling and +1 to Marksman combat skill."
+      }
+    ];
+    let mantles = [...FALLBACK_MANTLES];
+
     const state = {
       activeFeatIds: [],
+      activeMantleId: "",
       characterImage: "",
       characterImageVisible: true
     };
@@ -1336,6 +1485,12 @@
     const featsPanel = document.getElementById("feats-panel");
     const activeFeatsNode = document.getElementById("active-feats");
     const featDescriptionsNode = document.getElementById("feat-description-list");
+    const mantlePanel = document.getElementById("mantle-panel");
+    const mantlePickerToggle = document.getElementById("mantle-picker-toggle");
+    const mantlePickerMenu = document.getElementById("mantle-picker-menu");
+    const mantleHoverPreview = document.getElementById("mantle-hover-preview");
+    const mantlePicker = document.getElementById("mantle-picker");
+    const mantleDescriptionsNode = document.getElementById("mantle-description-list");
     const loadInput = document.getElementById("load-sheet");
     const characterImageInput = document.getElementById("character-image-input");
     const characterWatermark = document.getElementById("character-watermark");
@@ -1347,6 +1502,12 @@
     const maxHpInput = document.getElementById("max-hp");
     const healthbarFill = document.getElementById("healthbar-fill");
     const healthbarText = document.getElementById("healthbar-text");
+    const characterLevelInput = document.getElementById("character-level");
+    const featTotalNode = document.getElementById("feat-total");
+    const skillPointTotalNode = document.getElementById("skill-point-total");
+    const combatPointTotalNode = document.getElementById("combat-point-total");
+    const skillPointInputs = Array.from(document.querySelectorAll(".skills-list input[type='number']"));
+    const combatSkillInputs = Array.from(document.querySelectorAll(".combat-skill-modifier"));
     const combatSkillRows = Array.from(document.querySelectorAll(".combat-skill-row"));
     const combatDrawer = document.getElementById("combat-drawer");
     const combatTab = document.getElementById("combat-tab");
@@ -1409,6 +1570,23 @@
         .filter((feat) => feat.id && feat.name && feat.description);
     }
 
+    function normalizeMantles(payload) {
+      const rawMantles = Array.isArray(payload) ? payload : payload.mantles;
+
+      if (!Array.isArray(rawMantles)) {
+        return [];
+      }
+
+      return rawMantles
+        .map((mantle) => ({
+          id: String(mantle.id || "").trim(),
+          name: String(mantle.name || "").trim(),
+          category: String(mantle.category || "General").trim(),
+          description: String(mantle.description || "").trim()
+        }))
+        .filter((mantle) => mantle.id && mantle.name && mantle.description);
+    }
+
     async function loadFeats() {
       try {
         const response = await fetch(FEATS_FILE, { cache: "no-store" });
@@ -1430,10 +1608,32 @@
       }
     }
 
+    async function loadMantles() {
+      try {
+        const response = await fetch(MANTLES_FILE, { cache: "no-store" });
+
+        if (!response.ok) {
+          throw new Error(`Could not load ${MANTLES_FILE}.`);
+        }
+
+        const loadedMantles = normalizeMantles(await response.json());
+
+        if (loadedMantles.length === 0) {
+          throw new Error(`${MANTLES_FILE} has no usable mantles.`);
+        }
+
+        mantles = loadedMantles;
+      } catch (error) {
+        console.warn("Using built-in mantles fallback.", error);
+        mantles = [...FALLBACK_MANTLES];
+      }
+    }
+
     function saveState(showMessage = false) {
       const payload = {
         fields: getFormFields(),
         activeFeatIds: state.activeFeatIds,
+        activeMantleId: state.activeMantleId,
         characterImage: state.characterImage,
         characterImageVisible: state.characterImageVisible
       };
@@ -1449,6 +1649,7 @@
       return {
         fields: getFormFields(),
         activeFeatIds: state.activeFeatIds,
+        activeMantleId: state.activeMantleId,
         characterImage: state.characterImage,
         characterImageVisible: state.characterImageVisible
       };
@@ -1473,6 +1674,95 @@
 
     function getDieRank(dieValue) {
       return DIE_RANK[dieValue] || 0;
+    }
+
+    function getCharacterLevel() {
+      const level = Math.floor(Number(characterLevelInput.value) || 1);
+      return Math.max(1, level);
+    }
+
+    function getTotalFeatPicks(level = getCharacterLevel()) {
+      return 2 + Math.floor((level - 1) / 2);
+    }
+
+    function enforceFeatBudget(totalFeats) {
+      if (state.activeFeatIds.length <= totalFeats) {
+        return false;
+      }
+
+      state.activeFeatIds = state.activeFeatIds.slice(0, totalFeats);
+      return true;
+    }
+
+    function getPointValue(input) {
+      return Math.max(0, Math.floor(Number(input.value) || 0));
+    }
+
+    function normalizePointInput(input) {
+      input.min = "0";
+      input.step = "1";
+      input.value = String(getPointValue(input));
+    }
+
+    function getSpentPoints(inputs) {
+      return inputs.reduce((total, input) => total + getPointValue(input), 0);
+    }
+
+    function enforcePointBudget(inputs, budget, changedInput = null) {
+      inputs.forEach(normalizePointInput);
+
+      let overspent = getSpentPoints(inputs) - budget;
+
+      if (overspent <= 0) {
+        return getSpentPoints(inputs);
+      }
+
+      const reductionOrder = changedInput && inputs.includes(changedInput)
+        ? [changedInput, ...inputs.filter((input) => input !== changedInput).reverse()]
+        : [...inputs].reverse();
+
+      reductionOrder.forEach((input) => {
+        if (overspent <= 0) {
+          return;
+        }
+
+        const currentValue = getPointValue(input);
+        const reduction = Math.min(currentValue, overspent);
+        input.value = String(currentValue - reduction);
+        overspent -= reduction;
+      });
+
+      return getSpentPoints(inputs);
+    }
+
+    function updateLevelProgression(changedInput = null) {
+      const level = getCharacterLevel();
+      const levelsAfterFirst = level - 1;
+      const totalFeats = getTotalFeatPicks(level);
+      const totalSkillPoints = 4 + (levelsAfterFirst * 3);
+      const totalCombatPoints = levelsAfterFirst;
+      const trimmedFeats = enforceFeatBudget(totalFeats);
+      const spentSkillPoints = enforcePointBudget(skillPointInputs, totalSkillPoints, changedInput);
+      const spentCombatPoints = enforcePointBudget(combatSkillInputs, totalCombatPoints, changedInput);
+
+      characterLevelInput.value = String(level);
+      featTotalNode.textContent = String(totalFeats - state.activeFeatIds.length);
+      skillPointTotalNode.textContent = String(totalSkillPoints - spentSkillPoints);
+      combatPointTotalNode.textContent = String(totalCombatPoints - spentCombatPoints);
+
+      if (trimmedFeats || changedInput === characterLevelInput) {
+        buildFeatSelect();
+        renderActiveFeats();
+        renderFeatDescriptions();
+      }
+    }
+
+    function normalizeAttributeDice() {
+      statSelects.forEach((select) => {
+        if (!select.value || !DIE_RANK[select.value]) {
+          select.value = "d4";
+        }
+      });
     }
 
     function reorderStatRows() {
@@ -1515,9 +1805,9 @@
     }
 
     function updateAllocationSummary() {
-      const values = statSelects.map((select) => select.value);
-      const counts = values.reduce((accumulator, dieValue) => {
-        accumulator[dieValue] = (accumulator[dieValue] || 0) + 1;
+      normalizeAttributeDice();
+      const counts = statSelects.reduce((accumulator, select) => {
+        accumulator[select.value] = (accumulator[select.value] || 0) + 1;
         return accumulator;
       }, {});
       const summary = Object.entries(counts)
@@ -1589,10 +1879,41 @@
         return;
       }
 
+      closeMantlePicker();
       featPickerMenu.hidden = false;
       featHoverPreview.hidden = false;
       featPicker.classList.add("is-open");
       featPickerToggle.setAttribute("aria-expanded", "true");
+    }
+
+    function setMantlePreview(mantleId = "") {
+      const mantle = mantles.find((entry) => entry.id === mantleId);
+
+      if (!mantle) {
+        mantleHoverPreview.innerHTML = "<h3>Mantle Preview</h3><p>Hover a mantle in the dropdown to preview its bonuses before choosing it.</p>";
+        return;
+      }
+
+      mantleHoverPreview.innerHTML = `<h3>${mantle.name}</h3><p>${mantle.description}</p>`;
+    }
+
+    function closeMantlePicker() {
+      mantlePickerMenu.hidden = true;
+      mantleHoverPreview.hidden = true;
+      mantlePicker.classList.remove("is-open");
+      mantlePickerToggle.setAttribute("aria-expanded", "false");
+    }
+
+    function openMantlePicker() {
+      if (mantlePickerMenu.childElementCount === 0) {
+        return;
+      }
+
+      closeFeatPicker();
+      mantlePickerMenu.hidden = false;
+      mantleHoverPreview.hidden = false;
+      mantlePicker.classList.add("is-open");
+      mantlePickerToggle.setAttribute("aria-expanded", "true");
     }
 
     function closeActionsMenu() {
@@ -1682,8 +2003,15 @@
         return;
       }
 
+      if (state.activeFeatIds.length >= getTotalFeatPicks()) {
+        setStatus("No feat picks left.");
+        buildFeatSelect();
+        return;
+      }
+
       state.activeFeatIds.push(featId);
       animatePanelGrowth(featsPanel, () => {
+        updateLevelProgression();
         buildFeatSelect();
         renderActiveFeats();
         renderFeatDescriptions();
@@ -1693,7 +2021,16 @@
 
     function buildFeatSelect() {
       const availableFeats = feats.filter((feat) => !state.activeFeatIds.includes(feat.id));
+      const featPicksLeft = getTotalFeatPicks() - state.activeFeatIds.length;
       featPickerMenu.innerHTML = "";
+
+      if (featPicksLeft <= 0) {
+        featPickerToggle.textContent = "No feat picks left";
+        featPickerToggle.disabled = true;
+        closeFeatPicker();
+        setFeatPreview();
+        return;
+      }
 
       if (availableFeats.length === 0) {
         featPickerToggle.textContent = "All feats added";
@@ -1723,6 +2060,53 @@
       });
 
       setFeatPreview();
+    }
+
+    function chooseMantle(mantleId) {
+      if (!mantleId || state.activeMantleId === mantleId) {
+        return;
+      }
+
+      state.activeMantleId = mantleId;
+      animatePanelGrowth(mantlePanel, () => {
+        buildMantleSelect();
+        renderMantleDescription();
+      });
+      saveState();
+    }
+
+    function buildMantleSelect() {
+      const availableMantles = mantles.filter((mantle) => mantle.id !== state.activeMantleId);
+      mantlePickerMenu.innerHTML = "";
+
+      if (availableMantles.length === 0) {
+        mantlePickerToggle.textContent = state.activeMantleId ? "Mantle chosen" : "No mantles available";
+        mantlePickerToggle.disabled = true;
+        closeMantlePicker();
+        setMantlePreview();
+        return;
+      }
+
+      mantlePickerToggle.disabled = false;
+      mantlePickerToggle.textContent = state.activeMantleId ? "Change mantle" : "Choose a mantle";
+
+      availableMantles.forEach((mantle) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "feat-option";
+        option.dataset.mantleId = mantle.id;
+        option.setAttribute("role", "option");
+        option.textContent = mantle.name;
+        option.addEventListener("mouseenter", () => setMantlePreview(mantle.id));
+        option.addEventListener("focus", () => setMantlePreview(mantle.id));
+        option.addEventListener("click", () => {
+          chooseMantle(mantle.id);
+          closeMantlePicker();
+        });
+        mantlePickerMenu.appendChild(option);
+      });
+
+      setMantlePreview();
     }
 
     function renderCharacterImage() {
@@ -1763,6 +2147,7 @@
     function removeFeat(featId) {
       state.activeFeatIds = state.activeFeatIds.filter((id) => id !== featId);
       animatePanelGrowth(featsPanel, () => {
+        updateLevelProgression();
         buildFeatSelect();
         renderActiveFeats();
         renderFeatDescriptions();
@@ -1817,15 +2202,64 @@
       });
     }
 
+    function removeMantle() {
+      state.activeMantleId = "";
+      animatePanelGrowth(mantlePanel, () => {
+        buildMantleSelect();
+        renderMantleDescription();
+      });
+      saveState();
+    }
+
+    function renderMantleDescription() {
+      mantleDescriptionsNode.innerHTML = "";
+
+      const mantle = mantles.find((entry) => entry.id === state.activeMantleId);
+
+      if (!mantle) {
+        const empty = document.createElement("div");
+        empty.className = "feat-description";
+        empty.innerHTML = "<h3>Mantle</h3><p>Choose a mantle above to show its skill or combat skill bonuses here.</p>";
+        mantleDescriptionsNode.appendChild(empty);
+        return;
+      }
+
+      const description = document.createElement("div");
+      description.className = "feat-description";
+
+      const header = document.createElement("div");
+      header.className = "feat-description-header";
+
+      const title = document.createElement("div");
+      title.innerHTML = `<h3>${mantle.name}</h3><span>${mantle.category}</span>`;
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "Remove";
+      remove.addEventListener("click", removeMantle);
+
+      const copy = document.createElement("p");
+      copy.textContent = mantle.description;
+
+      header.appendChild(title);
+      header.appendChild(remove);
+      description.appendChild(header);
+      description.appendChild(copy);
+      mantleDescriptionsNode.appendChild(description);
+    }
+
     function loadState() {
       const raw = localStorage.getItem(STORAGE_KEY);
 
       if (!raw) {
         buildFeatSelect();
+        buildMantleSelect();
         renderCharacterImage();
         renderActiveFeats();
         renderFeatDescriptions();
+        renderMantleDescription();
         updateAllocationSummary();
+        updateLevelProgression();
         updateDerivedMaxHp();
         updateHealthbar();
         updateCombatSkillDice();
@@ -1836,6 +2270,7 @@
         const payload = JSON.parse(raw);
         setFormFields(payload.fields || {});
         state.activeFeatIds = Array.isArray(payload.activeFeatIds) ? payload.activeFeatIds : [];
+        state.activeMantleId = typeof payload.activeMantleId === "string" ? payload.activeMantleId : "";
         state.characterImage = typeof payload.characterImage === "string" ? payload.characterImage : "";
         state.characterImageVisible = typeof payload.characterImageVisible === "boolean" ? payload.characterImageVisible : true;
       } catch (error) {
@@ -1843,10 +2278,13 @@
       }
 
       buildFeatSelect();
+      buildMantleSelect();
       renderCharacterImage();
       renderActiveFeats();
       renderFeatDescriptions();
+      renderMantleDescription();
       updateAllocationSummary();
+      updateLevelProgression();
       updateDerivedMaxHp();
       updateHealthbar();
       updateCombatSkillDice();
@@ -1874,13 +2312,17 @@
           const payload = JSON.parse(String(reader.result));
           setFormFields(payload.fields || {});
           state.activeFeatIds = Array.isArray(payload.activeFeatIds) ? payload.activeFeatIds : [];
+          state.activeMantleId = typeof payload.activeMantleId === "string" ? payload.activeMantleId : "";
           state.characterImage = typeof payload.characterImage === "string" ? payload.characterImage : "";
           state.characterImageVisible = typeof payload.characterImageVisible === "boolean" ? payload.characterImageVisible : true;
           buildFeatSelect();
+          buildMantleSelect();
           renderCharacterImage();
           renderActiveFeats();
           renderFeatDescriptions();
+          renderMantleDescription();
           updateAllocationSummary();
+          updateLevelProgression();
           updateDerivedMaxHp();
           updateHealthbar();
           updateCombatSkillDice();
@@ -1909,24 +2351,29 @@
         element.value = "";
       });
 
-      document.querySelector('[name="strengthDie"]').value = "d10";
-      document.querySelector('[name="dexterityDie"]').value = "d12";
-      document.querySelector('[name="constitutionDie"]').value = "d8";
-      document.querySelector('[name="intelligenceDie"]').value = "d6";
-      document.querySelector('[name="wisdomDie"]').value = "d20";
+      document.querySelector('[name="characterLevel"]').value = "1";
+      document.querySelector('[name="strengthDie"]').value = "d4";
+      document.querySelector('[name="dexterityDie"]').value = "d4";
+      document.querySelector('[name="constitutionDie"]').value = "d4";
+      document.querySelector('[name="intelligenceDie"]').value = "d4";
+      document.querySelector('[name="wisdomDie"]').value = "d4";
       document.querySelector('[name="charismaDie"]').value = "d4";
       updateDerivedMaxHp();
       currentHpInput.value = maxHpInput.value;
 
       state.activeFeatIds = [];
+      state.activeMantleId = "";
       state.characterImage = "";
       state.characterImageVisible = true;
       characterImageInput.value = "";
       buildFeatSelect();
+      buildMantleSelect();
       renderCharacterImage();
       renderActiveFeats();
       renderFeatDescriptions();
+      renderMantleDescription();
       updateAllocationSummary();
+      updateLevelProgression();
       updateHealthbar();
       updateCombatSkillDice();
       saveState();
@@ -1993,6 +2440,13 @@
         closeFeatPicker();
       }
     });
+    mantlePickerToggle.addEventListener("click", () => {
+      if (mantlePickerMenu.hidden) {
+        openMantlePicker();
+      } else {
+        closeMantlePicker();
+      }
+    });
 
     loadInput.addEventListener("change", (event) => {
       const file = event.target.files && event.target.files[0];
@@ -2007,6 +2461,7 @@
     document.querySelectorAll("input[name], select[name], textarea[name]").forEach((element) => {
       element.addEventListener("input", () => {
         updateAllocationSummary();
+        updateLevelProgression(element);
         updateDerivedMaxHp();
         updateHealthbar();
         updateCombatSkillDice();
@@ -2014,6 +2469,7 @@
       });
       element.addEventListener("change", () => {
         updateAllocationSummary();
+        updateLevelProgression(element);
         updateDerivedMaxHp();
         updateHealthbar();
         updateCombatSkillDice();
@@ -2037,6 +2493,10 @@
         closeFeatPicker();
       }
 
+      if (!event.target.closest("#mantle-picker")) {
+        closeMantlePicker();
+      }
+
       if (!event.target.closest(".actions")) {
         closeActionsMenu();
       }
@@ -2045,6 +2505,7 @@
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         closeFeatPicker();
+        closeMantlePicker();
         closeActionsMenu();
         closeCombatDrawer();
       }
@@ -2076,6 +2537,7 @@
 
     async function initializeSheet() {
       await loadFeats();
+      await loadMantles();
       loadState();
     }
 
