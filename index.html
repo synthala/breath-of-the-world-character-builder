@@ -2039,6 +2039,9 @@
     const MANTLES_FILE = "mantles.json";
     const CHARACTER_SAVE_FOLDER = "character-saves";
     const DEFAULT_CHARACTER_SHEET_FILE = "character-sheet.json";
+    const CLOUD_SYNC_DEBOUNCE_MS = 900;
+    const CLOUD_SYNC_POLL_MS = 5000;
+    const CLOUD_SYNC_INTERVAL_MS = 15000;
 
     const FALLBACK_FEATS = [
       {
@@ -2199,6 +2202,19 @@
         others: []
       }
     };
+    const cloudState = {
+      characterId: "",
+      characterName: "",
+      lastSyncedPayload: "",
+      lastRemoteUpdatedAt: "",
+      saveTimeoutId: 0,
+      pollIntervalId: 0,
+      realtimeChannel: null,
+      isApplyingRemotePayload: false,
+      isSaving: false,
+      pendingSave: false,
+      pendingSaveMessage: false
+    };
 
     const statsGrid = document.getElementById("stats-grid");
     const statRows = Array.from(document.querySelectorAll(".stat-row"));
@@ -2279,6 +2295,238 @@
       }
 
       return `character-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function getCurrentCharacterName() {
+      return document.getElementById("character-name").value.trim();
+    }
+
+    function getCloudMetadata() {
+      if (!cloudState.characterId) {
+        return null;
+      }
+
+      return {
+        id: cloudState.characterId,
+        name: cloudState.characterName || getCurrentCharacterName(),
+        updatedAt: cloudState.lastRemoteUpdatedAt
+      };
+    }
+
+    function getStoredSheetPayload() {
+      const payload = getCharacterSheetPayload();
+      const cloud = getCloudMetadata();
+
+      if (cloud) {
+        payload._cloud = cloud;
+      }
+
+      return payload;
+    }
+
+    function persistLocalState(showMessage = false) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(getStoredSheetPayload()));
+
+      if (showMessage) {
+        setStatus("Sheet saved.");
+      }
+    }
+
+    function clearCloudRealtimeSubscription() {
+      if (!cloudState.realtimeChannel) {
+        return;
+      }
+
+      supabaseClient.removeChannel(cloudState.realtimeChannel);
+      cloudState.realtimeChannel = null;
+    }
+
+    function clearCloudPolling() {
+      if (!cloudState.pollIntervalId) {
+        return;
+      }
+
+      window.clearInterval(cloudState.pollIntervalId);
+      cloudState.pollIntervalId = 0;
+    }
+
+    function scheduleCloudPolling() {
+      clearCloudPolling();
+
+      if (!cloudState.characterId) {
+        return;
+      }
+
+      cloudState.pollIntervalId = window.setInterval(() => {
+        void pullLatestCloudCharacter();
+      }, CLOUD_SYNC_POLL_MS);
+    }
+
+    function handleIncomingCloudRow(row, showMessage = true) {
+      if (!row || !row.id) {
+        return;
+      }
+
+      const payload = row.data && typeof row.data === "object" ? row.data : {};
+      const payloadText = JSON.stringify(payload);
+
+      if (payloadText === cloudState.lastSyncedPayload) {
+        cloudState.characterId = row.id;
+        cloudState.characterName = typeof row.name === "string" ? row.name : getCurrentCharacterName();
+        cloudState.lastRemoteUpdatedAt = typeof row.updated_at === "string" ? row.updated_at : "";
+        persistLocalState();
+        return;
+      }
+
+      cloudState.isApplyingRemotePayload = true;
+
+      try {
+        loadCharacterPayload(payload);
+        cloudState.characterId = row.id;
+        cloudState.characterName = typeof row.name === "string" ? row.name : getCurrentCharacterName();
+        cloudState.lastSyncedPayload = payloadText;
+        cloudState.lastRemoteUpdatedAt = typeof row.updated_at === "string" ? row.updated_at : "";
+        persistLocalState();
+      } finally {
+        cloudState.isApplyingRemotePayload = false;
+      }
+
+      if (showMessage) {
+        setStatus("Live update received.");
+      }
+    }
+
+    async function pullLatestCloudCharacter() {
+      if (!cloudState.characterId || cloudState.isApplyingRemotePayload || cloudState.isSaving) {
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from("characters")
+        .select("id, name, data, updated_at")
+        .eq("id", cloudState.characterId)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Cloud pull failed.", error);
+        return;
+      }
+
+      if (!data) {
+        return;
+      }
+
+      if (
+        typeof data.updated_at === "string" &&
+        data.updated_at &&
+        cloudState.lastRemoteUpdatedAt &&
+        data.updated_at <= cloudState.lastRemoteUpdatedAt
+      ) {
+        return;
+      }
+
+      handleIncomingCloudRow(data);
+    }
+
+    function subscribeToCloudCharacter() {
+      clearCloudRealtimeSubscription();
+      scheduleCloudPolling();
+
+      if (!cloudState.characterId) {
+        return;
+      }
+
+      cloudState.realtimeChannel = supabaseClient
+        .channel(`character-live-${cloudState.characterId}`)
+        .on("postgres_changes", {
+          event: "*",
+          schema: "public",
+          table: "characters",
+          filter: `id=eq.${cloudState.characterId}`
+        }, (payload) => {
+          if (!payload.new) {
+            return;
+          }
+
+          handleIncomingCloudRow(payload.new);
+        })
+        .subscribe();
+
+      void pullLatestCloudCharacter();
+    }
+
+    function setCloudCharacterBinding(characterId = "", characterName = "", updatedAt = "") {
+      const nextCharacterId = typeof characterId === "string" ? characterId : "";
+      const nextCharacterName = typeof characterName === "string" ? characterName.trim() : "";
+      const nextUpdatedAt = typeof updatedAt === "string" ? updatedAt : "";
+      const bindingChanged = cloudState.characterId !== nextCharacterId;
+
+      cloudState.characterId = nextCharacterId;
+      cloudState.characterName = nextCharacterName;
+      cloudState.lastRemoteUpdatedAt = nextUpdatedAt;
+
+      if (!nextCharacterId) {
+        window.clearTimeout(cloudState.saveTimeoutId);
+        cloudState.saveTimeoutId = 0;
+        cloudState.pendingSave = false;
+        cloudState.pendingSaveMessage = false;
+        cloudState.lastSyncedPayload = "";
+        clearCloudRealtimeSubscription();
+        clearCloudPolling();
+        persistLocalState();
+        return;
+      }
+
+      if (bindingChanged) {
+        subscribeToCloudCharacter();
+      } else {
+        scheduleCloudPolling();
+      }
+
+      persistLocalState();
+    }
+
+    function queueCloudSave(showMessage = false, immediate = false) {
+      if (cloudState.isApplyingRemotePayload) {
+        return;
+      }
+
+      if (!getCurrentCharacterName()) {
+        return;
+      }
+
+      window.clearTimeout(cloudState.saveTimeoutId);
+      cloudState.saveTimeoutId = 0;
+
+      if (showMessage) {
+        cloudState.pendingSaveMessage = true;
+      }
+
+      const runSave = async () => {
+        if (cloudState.isSaving) {
+          cloudState.pendingSave = true;
+          return;
+        }
+
+        const nextShowMessage = cloudState.pendingSaveMessage;
+        cloudState.pendingSaveMessage = false;
+        await saveCloudCharacter(nextShowMessage);
+
+        if (cloudState.pendingSave) {
+          cloudState.pendingSave = false;
+          queueCloudSave(cloudState.pendingSaveMessage, true);
+        }
+      };
+
+      if (immediate) {
+        void runSave();
+        return;
+      }
+
+      cloudState.saveTimeoutId = window.setTimeout(() => {
+        cloudState.saveTimeoutId = 0;
+        void runSave();
+      }, CLOUD_SYNC_DEBOUNCE_MS);
     }
 
     function setActiveSheetTab(tab) {
@@ -2451,23 +2699,14 @@
       }
     }
 
-    function saveState(showMessage = false) {
-      const payload = {
-        fields: getFormFields(),
-        activeFeatIds: state.activeFeatIds,
-        featUseChecks: state.featUseChecks,
-        activeMantleId: state.activeMantleId,
-        characterImage: state.characterImage,
-        characterImageVisible: state.characterImageVisible,
-        personas: state.personas
-      };
+    function saveState(showMessage = false, options = {}) {
+      persistLocalState(showMessage);
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-
-      if (showMessage) {
-        setStatus("Sheet saved.");
+      if (options.queueCloudSync === false) {
+        return;
       }
 
+      queueCloudSave(false);
     }
 
     function getCharacterSheetPayload() {
@@ -2526,7 +2765,7 @@
     }
 
     async function saveCloudCharacter(showMessage = false) {
-      const characterName = document.getElementById("character-name").value.trim();
+      const characterName = getCurrentCharacterName();
 
       if (!characterName) {
         if (showMessage) {
@@ -2536,46 +2775,73 @@
       }
 
       const payload = getCharacterSheetPayload();
-      const { data: existing, error: findError } = await supabaseClient
-        .from("characters")
-        .select("id")
-        .eq("name", characterName)
-        .limit(1)
-        .maybeSingle();
+      const payloadText = JSON.stringify(payload);
 
-      if (findError) {
-        console.error("Cloud save lookup failed.", findError);
-        setStatus("Cloud save failed.");
-        return false;
+      if (
+        !showMessage &&
+        cloudState.characterId &&
+        cloudState.characterName === characterName &&
+        cloudState.lastSyncedPayload === payloadText
+      ) {
+        return true;
       }
 
-      const row = {
-        id: existing?.id || createCloudCharacterId(),
-        name: characterName,
-        data: payload,
-        updated_at: new Date().toISOString()
-      };
-      const { error } = await supabaseClient
-        .from("characters")
-        .upsert(row);
+      cloudState.isSaving = true;
 
-      if (error) {
-        console.error("Cloud save failed.", error);
-        setStatus("Cloud save failed.");
-        return false;
+      try {
+        let characterId = cloudState.characterId;
+
+        if (!characterId) {
+          const { data: existing, error: findError } = await supabaseClient
+            .from("characters")
+            .select("id")
+            .eq("name", characterName)
+            .limit(1)
+            .maybeSingle();
+
+          if (findError) {
+            console.error("Cloud save lookup failed.", findError);
+            setStatus("Cloud save failed.");
+            return false;
+          }
+
+          characterId = existing?.id || createCloudCharacterId();
+        }
+
+        const updatedAt = new Date().toISOString();
+        const row = {
+          id: characterId,
+          name: characterName,
+          data: payload,
+          updated_at: updatedAt
+        };
+        const { error } = await supabaseClient
+          .from("characters")
+          .upsert(row);
+
+        if (error) {
+          console.error("Cloud save failed.", error);
+          setStatus("Cloud save failed.");
+          return false;
+        }
+
+        cloudState.lastSyncedPayload = payloadText;
+        setCloudCharacterBinding(characterId, characterName, updatedAt);
+
+        if (showMessage) {
+          setStatus("Cloud saved.");
+        }
+
+        return true;
+      } finally {
+        cloudState.isSaving = false;
       }
-
-      if (showMessage) {
-        setStatus("Cloud saved.");
-      }
-
-      return true;
     }
 
     async function loadCloudCharacterById(characterId) {
       const { data, error } = await supabaseClient
         .from("characters")
-        .select("data, name")
+        .select("id, data, name, updated_at")
         .eq("id", characterId)
         .maybeSingle();
 
@@ -2590,8 +2856,8 @@
         return true;
       }
 
-      loadCharacterPayload(data.data || {});
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data.data || {}));
+      handleIncomingCloudRow(data, false);
+      setCloudCharacterBinding(data.id, data.name || "", data.updated_at || "");
       setStatus("Cloud character loaded.");
       return true;
     }
@@ -3808,15 +4074,24 @@
       const raw = localStorage.getItem(STORAGE_KEY);
 
       if (!raw) {
+        setCloudCharacterBinding();
         refreshSheetFromState();
         return;
       }
 
       try {
         const payload = JSON.parse(raw);
+        const cloud = payload && typeof payload._cloud === "object" ? payload._cloud : null;
         loadCharacterPayload(payload);
+        cloudState.lastSyncedPayload = JSON.stringify(getCharacterSheetPayload());
+        setCloudCharacterBinding(
+          cloud && typeof cloud.id === "string" ? cloud.id : "",
+          cloud && typeof cloud.name === "string" ? cloud.name : "",
+          cloud && typeof cloud.updatedAt === "string" ? cloud.updatedAt : ""
+        );
       } catch (error) {
         console.error("Could not load sheet state.", error);
+        setCloudCharacterBinding();
         refreshSheetFromState();
       }
     }
@@ -3841,7 +4116,9 @@
       reader.onload = () => {
         try {
           const payload = JSON.parse(String(reader.result));
+          setCloudCharacterBinding();
           loadCharacterPayload(payload);
+          cloudState.lastSyncedPayload = "";
           saveState();
           setStatus("Character loaded.");
         } catch (error) {
@@ -3854,6 +4131,7 @@
     }
 
     function resetSheet() {
+      setCloudCharacterBinding();
       document.querySelectorAll("input[name], select[name]").forEach((element) => {
         if (element.matches(".stat-select")) {
           return;
@@ -3901,7 +4179,7 @@
 
     document.getElementById("save-sheet").addEventListener("click", saveCharacterFile);
     document.getElementById("load-cloud-character").addEventListener("click", openCloudLoadMenu);
-    document.getElementById("save-cloud-character").addEventListener("click", () => saveCloudCharacter(true));
+    document.getElementById("save-cloud-character").addEventListener("click", () => queueCloudSave(true, true));
     document.getElementById("print-sheet").addEventListener("click", () => window.print());
     document.getElementById("reset-sheet").addEventListener("click", resetSheet);
     document.querySelectorAll("[data-add-persona]").forEach((button) => {
@@ -4154,8 +4432,8 @@
     }, { passive: true });
 
     window.setInterval(() => {
-      saveCloudCharacter();
-    }, 15000);
+      queueCloudSave(false, true);
+    }, CLOUD_SYNC_INTERVAL_MS);
 
     async function initializeSheet() {
       setActiveSheetTab(sheetTabs[0]);
