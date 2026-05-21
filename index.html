@@ -19,6 +19,29 @@
 
     * {
       box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(17, 17, 17, 0.28) rgba(252, 251, 248, 0.18);
+    }
+
+    *::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+
+    *::-webkit-scrollbar-track {
+      background: rgba(252, 251, 248, 0.18);
+    }
+
+    *::-webkit-scrollbar-thumb {
+      border: 2px solid transparent;
+      border-radius: 999px;
+      background: rgba(17, 17, 17, 0.24);
+      background-clip: padding-box;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+      background: rgba(17, 17, 17, 0.38);
+      background-clip: padding-box;
     }
 
     body {
@@ -81,11 +104,15 @@
 
     .character-watermark {
       position: absolute;
-      inset: -44px;
+      top: -44px;
+      left: -44px;
       width: calc(100% + 88px);
-      height: calc(100% + 88px);
+      height: 1120px;
       object-fit: cover;
+      object-position: center top;
       opacity: 0.34;
+      -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
+      mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%);
       pointer-events: none;
       z-index: 0;
       transition: opacity 160ms ease;
@@ -101,6 +128,8 @@
     }
 
     .layout,
+    .sheet-tabs,
+    .sheet-tab-panel,
     .sheet-title,
     .name-field,
     .level-field,
@@ -115,6 +144,8 @@
     }
 
     .page.is-previewing-character .layout,
+    .page.is-previewing-character .sheet-tabs,
+    .page.is-previewing-character .sheet-tab-panel,
     .page.is-previewing-character .sheet-title,
     .page.is-previewing-character .name-field,
     .page.is-previewing-character .level-field,
@@ -302,8 +333,274 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--panel-gap);
-      margin-top: var(--panel-gap);
       transition: grid-template-columns 320ms ease, gap 320ms ease, transform 320ms ease;
+    }
+
+    .sheet-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 var(--panel-gap);
+    }
+
+    .sheet-tab {
+      min-height: 44px;
+      background: rgba(252, 251, 248, 0.72);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .sheet-tab[aria-selected="true"] {
+      background: var(--accent-strong);
+    }
+
+    .sheet-tab-panel[hidden] {
+      display: none;
+    }
+
+    .notes-inventory-layout {
+      min-height: 560px;
+      align-items: stretch;
+    }
+
+    .notes-inventory-layout .panel {
+      display: grid;
+      grid-template-rows: auto minmax(420px, 1fr);
+    }
+
+    .notes-inventory-layout textarea {
+      min-height: 420px;
+    }
+
+    .party-tab-layout {
+      display: grid;
+      gap: var(--panel-gap);
+      min-height: 620px;
+    }
+
+    .persona-section {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .persona-section-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .persona-section-header h2 {
+      margin: 0;
+    }
+
+    .persona-add {
+      width: 36px;
+      min-height: 36px;
+      padding: 0;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .persona-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .persona-card {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) 108px 36px;
+      gap: 12px;
+      align-items: center;
+      min-height: 96px;
+      padding: 10px;
+      border: 4px solid var(--line);
+      background: rgba(252, 251, 248, 0.78);
+      transition: transform 220ms ease, opacity 180ms ease, background-color 180ms ease;
+    }
+
+    .persona-card.is-dragging {
+      opacity: 0.42;
+      background: rgba(215, 197, 164, 0.72);
+    }
+
+    .persona-card.is-placeholder {
+      opacity: 0;
+    }
+
+    .persona-drag-clone {
+      position: fixed;
+      z-index: 6000;
+      pointer-events: none;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+      opacity: 0.96;
+    }
+
+    .persona-drag-handle,
+    .persona-delete {
+      padding: 0;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .persona-drag-handle {
+      position: relative;
+      width: 34px;
+      min-height: 72px;
+      border-radius: 999px;
+      background: rgba(215, 197, 164, 0.52);
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .persona-drag-handle::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 18px;
+      height: 42px;
+      background:
+        radial-gradient(circle, var(--ink) 0 2px, transparent 2.5px) 0 0 / 9px 14px;
+      opacity: 0.76;
+      transform: translate(-50%, -50%);
+    }
+
+    .persona-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .persona-delete {
+      width: 28px;
+      min-height: 28px;
+    }
+
+    .persona-fields {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .persona-name,
+    .persona-description {
+      border-width: 0 0 2px;
+      background: transparent;
+      padding: 4px 0;
+    }
+
+    .persona-description {
+      min-height: 42px;
+      resize: vertical;
+    }
+
+    .persona-image-label {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 86px;
+      aspect-ratio: 1;
+      padding: 6px;
+      border: 4px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      cursor: pointer;
+      overflow: hidden;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .persona-image-label input {
+      display: none;
+    }
+
+    .persona-image-label img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .persona-image-label span {
+      position: relative;
+      z-index: 1;
+      padding: 4px;
+      background: rgba(252, 251, 248, 0.76);
+    }
+
+    .persona-image-label.has-image span {
+      opacity: 0;
+      transition: opacity 160ms ease;
+    }
+
+    .persona-image-label.has-image:hover span,
+    .persona-image-label.has-image:focus-within span {
+      opacity: 1;
+    }
+
+    .persona-empty {
+      margin: 0;
+      padding: 12px;
+      border: 2px dashed var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.44);
+    }
+
+    .image-cropper-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 7000;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(17, 17, 17, 0.54);
+    }
+
+    .image-cropper-modal[hidden] {
+      display: none;
+    }
+
+    .image-cropper-panel {
+      display: grid;
+      gap: 14px;
+      width: min(420px, calc(100vw - 36px));
+      padding: 16px;
+      border: 4px solid var(--line);
+      background: var(--paper);
+    }
+
+    .image-cropper-panel h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .image-cropper-frame {
+      display: grid;
+      place-items: center;
+      aspect-ratio: 1;
+      border: 3px solid var(--line);
+      background: rgba(17, 17, 17, 0.08);
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .image-cropper-frame:active {
+      cursor: grabbing;
+    }
+
+    #persona-crop-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .image-cropper-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
     }
 
     .left-column {
@@ -311,6 +608,33 @@
       z-index: 20;
       display: grid;
       gap: var(--panel-gap);
+    }
+
+    .right-column {
+      position: relative;
+      z-index: 20;
+      display: grid;
+      gap: var(--panel-gap);
+    }
+
+    .left-column:has(.feat-picker.is-open) {
+      z-index: 3000;
+    }
+
+    .right-column:has(.feat-picker.is-open) {
+      z-index: 3000;
+    }
+
+    .left-column .panel,
+    .right-column .panel {
+      position: relative;
+      z-index: 1;
+      overflow: visible;
+    }
+
+    .left-column .panel:has(.feat-picker.is-open),
+    .right-column .panel:has(.feat-picker.is-open) {
+      z-index: 3000;
     }
 
     .character-options {
@@ -323,6 +647,10 @@
       align-items: start;
     }
 
+    .character-options:has(.feat-picker.is-open) {
+      z-index: 3000;
+    }
+
     .character-options .panel {
       position: relative;
       z-index: 1;
@@ -330,7 +658,7 @@
     }
 
     .character-options .panel:has(.feat-picker.is-open) {
-      z-index: 140;
+      z-index: 3000;
     }
 
     .layout > .panel {
@@ -340,22 +668,25 @@
 
     .combat-panel {
       display: grid;
+      grid-template-rows: auto auto auto auto minmax(0, 1fr);
       gap: 14px;
+      min-height: 0;
     }
 
     .combat-drawer {
       position: fixed;
-      top: 112px;
+      top: 50%;
       right: 0;
       z-index: 60;
       width: min(420px, calc(100vw - 52px));
-      transform: translateX(calc(100% - 10px));
+      height: 80vh;
+      transform: translateY(-50%) translateX(calc(100% - 10px));
       transition: transform 320ms ease;
       pointer-events: auto;
     }
 
     .combat-drawer.is-open {
-      transform: translateX(0);
+      transform: translateY(-50%) translateX(0);
     }
 
     .combat-tab {
@@ -376,7 +707,10 @@
 
     .combat-drawer .combat-panel {
       width: 100%;
-      min-height: 240px;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      background: var(--paper);
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
     }
 
@@ -411,6 +745,9 @@
     .combat-skills {
       display: grid;
       gap: 8px;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 4px;
     }
 
     .combat-skills-header,
@@ -650,7 +987,7 @@
       top: calc(100% + 4px);
       left: 0;
       width: 100%;
-      z-index: 1000;
+      z-index: 4000;
       display: grid;
       gap: 6px;
       max-height: 260px;
@@ -666,7 +1003,7 @@
     }
 
     .feat-picker.is-open {
-      z-index: 1200;
+      z-index: 4000;
     }
 
     .feat-option {
@@ -688,7 +1025,7 @@
       position: absolute;
       top: calc(100% + 4px);
       left: calc(100% + 8px);
-      z-index: 1100;
+      z-index: 3900;
       width: 280px;
       padding: 12px;
       border: 2px solid var(--line);
@@ -786,6 +1123,32 @@
     .feat-description p {
       margin: 0;
       line-height: 1.45;
+    }
+
+    .feat-use-tracker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .feat-use-check {
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+      padding: 5px;
+      border: 1px solid rgba(17, 17, 17, 0.45);
+      background: rgba(255, 255, 255, 0.48);
+      color: var(--ink);
+      font-size: 0.82rem;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .feat-use-check input {
+      width: auto;
+      margin: 0;
+      accent-color: var(--accent-strong);
     }
 
     .skills-header,
@@ -924,7 +1287,6 @@
 
       .combat-drawer {
         position: fixed;
-        top: 84px;
         left: auto;
         right: 0;
       }
@@ -943,7 +1305,6 @@
       }
 
       .combat-drawer {
-        top: 60px;
         width: min(360px, calc(100vw - 48px));
       }
 
@@ -971,9 +1332,16 @@
       .stat-row,
       .skills-header,
       .skill-row,
+      .persona-card,
       .feat-item,
       .level-readout {
         grid-template-columns: 1fr;
+      }
+
+      .persona-image-label {
+        width: 100%;
+        max-width: 180px;
+        justify-self: start;
       }
 
       .skill-row.has-mantle-bonus,
@@ -1042,6 +1410,13 @@
         </div>
       </section>
 
+    <div class="sheet-tabs" role="tablist" aria-label="Character sheet sections">
+      <button type="button" class="sheet-tab" id="character-sheet-tab" role="tab" aria-selected="true" aria-controls="character-sheet-panel">Character</button>
+      <button type="button" class="sheet-tab" id="notes-inventory-tab" role="tab" aria-selected="false" aria-controls="notes-inventory-panel">Notes &amp; Inventory</button>
+      <button type="button" class="sheet-tab" id="party-others-tab" role="tab" aria-selected="false" aria-controls="party-others-panel">Party &amp; Others</button>
+    </div>
+
+    <div class="sheet-tab-panel" id="character-sheet-panel" role="tabpanel" aria-labelledby="character-sheet-tab">
     <div class="layout">
       <section class="panel level-box">
         <h2>Level</h2>
@@ -1139,111 +1514,6 @@
           <div class="allocation-summary" id="allocation-summary"></div>
         </section>
 
-      </div>
-
-      <section class="panel">
-        <h2>Skills</h2>
-        <p class="help">All skills start at 0. Use the number box for the modifier you want tied to that skill in your hybrid system.</p>
-        <div class="skills-header">
-          <div>Skill</div>
-          <div>Stat</div>
-          <div>Modifier</div>
-        </div>
-        <div class="skills-list">
-          <div class="skill-row">
-            <div class="skill-name"><strong>Acrobatics</strong><span>Balance, tumbling</span></div>
-            <div class="die-badge">DEX</div>
-            <input name="acrobatics" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Animal Handling</strong><span>Calm or guide creatures</span></div>
-            <div class="die-badge">WIS</div>
-            <input name="animalHandling" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Arcana</strong><span>Magic, relics, strange lore</span></div>
-            <div class="die-badge">INT</div>
-            <input name="arcana" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Athletics</strong><span>Climb, leap, force</span></div>
-            <div class="die-badge">STR</div>
-            <input name="athletics" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Deception</strong><span>Lies, bluffs, disguise</span></div>
-            <div class="die-badge">CHA</div>
-            <input name="deception" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>History</strong><span>Events, kingdoms, songs</span></div>
-            <div class="die-badge">INT</div>
-            <input name="history" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Insight</strong><span>Motive, emotion, intent</span></div>
-            <div class="die-badge">WIS</div>
-            <input name="insight" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Intimidation</strong><span>Threat, command, fear</span></div>
-            <div class="die-badge">CHA</div>
-            <input name="intimidation" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Investigation</strong><span>Clues, patterns, evidence</span></div>
-            <div class="die-badge">INT</div>
-            <input name="investigation" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Medicine</strong><span>Treatment, wounds, herbs</span></div>
-            <div class="die-badge">WIS</div>
-            <input name="medicine" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Nature</strong><span>Wilds, beasts, weather</span></div>
-            <div class="die-badge">INT</div>
-            <input name="nature" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Perception</strong><span>Notice danger and detail</span></div>
-            <div class="die-badge">WIS</div>
-            <input name="perception" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Performance</strong><span>Song, art, stagecraft</span></div>
-            <div class="die-badge">CHA</div>
-            <input name="performance" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Persuasion</strong><span>Convince, negotiate, inspire</span></div>
-            <div class="die-badge">CHA</div>
-            <input name="persuasion" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Religion</strong><span>Faiths, rites, sacred history</span></div>
-            <div class="die-badge">INT</div>
-            <input name="religion" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Sleight of Hand</strong><span>Pickpocket, conceal, finesse</span></div>
-            <div class="die-badge">DEX</div>
-            <input name="sleightOfHand" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Stealth</strong><span>Hide, move unseen</span></div>
-            <div class="die-badge">DEX</div>
-            <input name="stealth" type="number" value="0">
-          </div>
-          <div class="skill-row">
-            <div class="skill-name"><strong>Survival</strong><span>Track, forage, endure</span></div>
-            <div class="die-badge">WIS</div>
-            <input name="survival" type="number" value="0">
-          </div>
-        </div>
-      </section>
-
-      <div class="character-options">
         <section class="panel" id="feats-panel">
           <h2>Feats</h2>
           <p class="help">Choose a feat to add it to this character sheet. Added feats show their descriptions below and can be removed from the list.</p>
@@ -1259,6 +1529,111 @@
           </div>
           <div class="active-feats" id="active-feats"></div>
           <div class="feat-description-list" id="feat-description-list"></div>
+        </section>
+
+      </div>
+
+      <div class="right-column">
+        <section class="panel">
+          <h2>Skills</h2>
+          <p class="help">All skills start at 0. Use the number box for the modifier you want tied to that skill in your hybrid system.</p>
+          <div class="skills-header">
+            <div>Skill</div>
+            <div>Stat</div>
+            <div>Modifier</div>
+          </div>
+          <div class="skills-list">
+            <div class="skill-row">
+              <div class="skill-name"><strong>Acrobatics</strong><span>Balance, tumbling</span></div>
+              <div class="die-badge">DEX</div>
+              <input name="acrobatics" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Animal Handling</strong><span>Calm or guide creatures</span></div>
+              <div class="die-badge">WIS</div>
+              <input name="animalHandling" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Arcana</strong><span>Magic, relics, strange lore</span></div>
+              <div class="die-badge">INT</div>
+              <input name="arcana" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Athletics</strong><span>Climb, leap, force</span></div>
+              <div class="die-badge">STR</div>
+              <input name="athletics" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Deception</strong><span>Lies, bluffs, disguise</span></div>
+              <div class="die-badge">CHA</div>
+              <input name="deception" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>History</strong><span>Events, kingdoms, songs</span></div>
+              <div class="die-badge">INT</div>
+              <input name="history" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Insight</strong><span>Motive, emotion, intent</span></div>
+              <div class="die-badge">WIS</div>
+              <input name="insight" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Intimidation</strong><span>Threat, command, fear</span></div>
+              <div class="die-badge">CHA</div>
+              <input name="intimidation" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Investigation</strong><span>Clues, patterns, evidence</span></div>
+              <div class="die-badge">INT</div>
+              <input name="investigation" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Medicine</strong><span>Treatment, wounds, herbs</span></div>
+              <div class="die-badge">WIS</div>
+              <input name="medicine" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Nature</strong><span>Wilds, beasts, weather</span></div>
+              <div class="die-badge">INT</div>
+              <input name="nature" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Perception</strong><span>Notice danger and detail</span></div>
+              <div class="die-badge">WIS</div>
+              <input name="perception" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Performance</strong><span>Song, art, stagecraft</span></div>
+              <div class="die-badge">CHA</div>
+              <input name="performance" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Persuasion</strong><span>Convince, negotiate, inspire</span></div>
+              <div class="die-badge">CHA</div>
+              <input name="persuasion" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Religion</strong><span>Faiths, rites, sacred history</span></div>
+              <div class="die-badge">INT</div>
+              <input name="religion" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Sleight of Hand</strong><span>Pickpocket, conceal, finesse</span></div>
+              <div class="die-badge">DEX</div>
+              <input name="sleightOfHand" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Stealth</strong><span>Hide, move unseen</span></div>
+              <div class="die-badge">DEX</div>
+              <input name="stealth" type="number" value="0">
+            </div>
+            <div class="skill-row">
+              <div class="skill-name"><strong>Survival</strong><span>Track, forage, endure</span></div>
+              <div class="die-badge">WIS</div>
+              <input name="survival" type="number" value="0">
+            </div>
+          </div>
         </section>
 
         <section class="panel" id="mantle-panel">
@@ -1279,8 +1654,10 @@
       </div>
 
     </div>
+    </div>
 
-    <div class="lower-layout">
+    <div class="sheet-tab-panel" id="notes-inventory-panel" role="tabpanel" aria-labelledby="notes-inventory-tab" hidden>
+    <div class="lower-layout notes-inventory-layout">
       <section class="panel">
         <h2>Notes</h2>
         <textarea name="notes" placeholder="Character notes, story details, reminders"></textarea>
@@ -1291,8 +1668,44 @@
         <textarea name="inventory" placeholder="Gear, coin, keepsakes, supplies"></textarea>
       </section>
     </div>
+    </div>
+
+    <div class="sheet-tab-panel" id="party-others-panel" role="tabpanel" aria-labelledby="party-others-tab" hidden>
+      <section class="panel party-tab-layout">
+        <div class="persona-section" data-persona-group="party">
+          <div class="persona-section-header">
+            <h2>Party</h2>
+            <button type="button" class="persona-add" data-add-persona="party" aria-label="Add party persona">+</button>
+          </div>
+          <div class="persona-list" id="party-persona-list"></div>
+        </div>
+
+        <div class="persona-section" data-persona-group="others">
+          <div class="persona-section-header">
+            <h2>Others</h2>
+            <button type="button" class="persona-add" data-add-persona="others" aria-label="Add other persona">+</button>
+          </div>
+          <div class="persona-list" id="others-persona-list"></div>
+        </div>
+      </section>
+    </div>
 
     <div class="status" id="status"></div>
+      </div>
+    </div>
+
+    <div class="image-cropper-modal" id="persona-cropper-modal" hidden>
+      <div class="image-cropper-panel" role="dialog" aria-modal="true" aria-labelledby="persona-cropper-title">
+        <h2 id="persona-cropper-title">Crop Picture</h2>
+        <div class="image-cropper-frame" id="persona-crop-frame">
+          <canvas id="persona-crop-canvas" width="512" height="512"></canvas>
+        </div>
+        <label for="persona-crop-zoom">Zoom</label>
+        <input id="persona-crop-zoom" type="range" min="1" max="3" value="1" step="0.01">
+        <div class="image-cropper-actions">
+          <button type="button" id="persona-crop-cancel">Cancel</button>
+          <button type="button" id="persona-crop-apply">Apply</button>
+        </div>
       </div>
     </div>
 
@@ -1547,9 +1960,14 @@
 
     const state = {
       activeFeatIds: [],
+      featUseChecks: {},
       activeMantleId: "",
       characterImage: "",
-      characterImageVisible: true
+      characterImageVisible: true,
+      personas: {
+        party: [],
+        others: []
+      }
     };
 
     const statsGrid = document.getElementById("stats-grid");
@@ -1577,6 +1995,7 @@
     const toggleCharacterImageButton = document.getElementById("toggle-character-image");
     const actionsMenuToggle = document.getElementById("actions-menu-toggle");
     const actionsMenu = document.getElementById("actions-menu");
+    const sheetTabs = Array.from(document.querySelectorAll(".sheet-tab"));
     const currentHpInput = document.getElementById("current-hp");
     const maxHpInput = document.getElementById("max-hp");
     const healthbarFill = document.getElementById("healthbar-fill");
@@ -1590,6 +2009,19 @@
     const combatSkillRows = Array.from(document.querySelectorAll(".combat-skill-row"));
     const combatDrawer = document.getElementById("combat-drawer");
     const combatTab = document.getElementById("combat-tab");
+    const personaLists = {
+      party: document.getElementById("party-persona-list"),
+      others: document.getElementById("others-persona-list")
+    };
+    let personaDrag = null;
+    const personaCropperModal = document.getElementById("persona-cropper-modal");
+    const personaCropFrame = document.getElementById("persona-crop-frame");
+    const personaCropCanvas = document.getElementById("persona-crop-canvas");
+    const personaCropZoom = document.getElementById("persona-crop-zoom");
+    const personaCropCancel = document.getElementById("persona-crop-cancel");
+    const personaCropApply = document.getElementById("persona-crop-apply");
+    const personaCropContext = personaCropCanvas.getContext("2d");
+    let personaCrop = null;
     const statRowOrder = new Map(statRows.map((row, index) => [row, index]));
     const DIE_RANK = {
       d4: 4,
@@ -1606,6 +2038,20 @@
       setStatus.timeoutId = window.setTimeout(() => {
         statusNode.textContent = "";
       }, 2400);
+    }
+
+    function setActiveSheetTab(tab) {
+      sheetTabs.forEach((sheetTab) => {
+        const isActive = sheetTab === tab;
+        const panel = document.getElementById(sheetTab.getAttribute("aria-controls"));
+
+        sheetTab.setAttribute("aria-selected", String(isActive));
+        sheetTab.tabIndex = isActive ? 0 : -1;
+
+        if (panel) {
+          panel.hidden = !isActive;
+        }
+      });
     }
 
     function getFormFields() {
@@ -1676,6 +2122,52 @@
         .filter((mantle) => mantle.id && mantle.name && mantle.description);
     }
 
+    function createPersona(group) {
+      return {
+        id: `${group}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: "",
+        description: "",
+        image: ""
+      };
+    }
+
+    function normalizePersonas(payloadPersonas) {
+      const source = payloadPersonas && typeof payloadPersonas === "object" ? payloadPersonas : {};
+
+      return {
+        party: normalizePersonaList(source.party),
+        others: normalizePersonaList(source.others)
+      };
+    }
+
+    function normalizePersonaList(personas) {
+      if (!Array.isArray(personas)) {
+        return [];
+      }
+
+      return personas
+        .map((persona, index) => ({
+          id: String(persona.id || `persona-${index}-${Math.random().toString(36).slice(2, 8)}`),
+          name: String(persona.name || ""),
+          description: String(persona.description || ""),
+          image: String(persona.image || "")
+        }));
+    }
+
+    function normalizeFeatUseChecks(checks) {
+      if (!checks || typeof checks !== "object") {
+        return {};
+      }
+
+      return Object.entries(checks).reduce((normalized, [key, values]) => {
+        if (Array.isArray(values)) {
+          normalized[key] = values.map(Boolean);
+        }
+
+        return normalized;
+      }, {});
+    }
+
     async function loadFeats() {
       try {
         const response = await fetch(FEATS_FILE, { cache: "no-store" });
@@ -1722,9 +2214,11 @@
       const payload = {
         fields: getFormFields(),
         activeFeatIds: state.activeFeatIds,
+        featUseChecks: state.featUseChecks,
         activeMantleId: state.activeMantleId,
         characterImage: state.characterImage,
-        characterImageVisible: state.characterImageVisible
+        characterImageVisible: state.characterImageVisible,
+        personas: state.personas
       };
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -1738,9 +2232,11 @@
       return {
         fields: getFormFields(),
         activeFeatIds: state.activeFeatIds,
+        featUseChecks: state.featUseChecks,
         activeMantleId: state.activeMantleId,
         characterImage: state.characterImage,
-        characterImageVisible: state.characterImageVisible
+        characterImageVisible: state.characterImageVisible,
+        personas: state.personas
       };
     }
 
@@ -1779,6 +2275,7 @@
         return false;
       }
 
+      state.activeFeatIds.slice(totalFeats).forEach(clearFeatUseChecks);
       state.activeFeatIds = state.activeFeatIds.slice(0, totalFeats);
       return true;
     }
@@ -2046,8 +2543,24 @@
     function closeMantlePicker() {
       mantlePickerMenu.hidden = true;
       mantleHoverPreview.hidden = true;
+      mantlePickerMenu.style.maxHeight = "";
       mantlePicker.classList.remove("is-open");
       mantlePickerToggle.setAttribute("aria-expanded", "false");
+    }
+
+    function fitMantleMenuToSheet() {
+      const page = document.querySelector(".page");
+
+      if (!page || mantlePickerMenu.hidden) {
+        return;
+      }
+
+      const menuRect = mantlePickerMenu.getBoundingClientRect();
+      const pageRect = page.getBoundingClientRect();
+      const pagePadding = 18;
+      const availableHeight = Math.max(24, pageRect.bottom - menuRect.top - pagePadding);
+
+      mantlePickerMenu.style.maxHeight = `${availableHeight}px`;
     }
 
     function openMantlePicker() {
@@ -2060,6 +2573,444 @@
       mantleHoverPreview.hidden = false;
       mantlePicker.classList.add("is-open");
       mantlePickerToggle.setAttribute("aria-expanded", "true");
+      fitMantleMenuToSheet();
+    }
+
+    function animatePersonaReorder(list, updateList) {
+      const cards = Array.from(list.querySelectorAll(".persona-card"));
+      const startingPositions = new Map(cards.map((card) => [card.dataset.personaId, card.getBoundingClientRect()]));
+
+      updateList();
+
+      Array.from(list.querySelectorAll(".persona-card")).forEach((card) => {
+        const startingPosition = startingPositions.get(card.dataset.personaId);
+
+        if (!startingPosition) {
+          return;
+        }
+
+        const endingPosition = card.getBoundingClientRect();
+        const deltaY = startingPosition.top - endingPosition.top;
+
+        if (Math.abs(deltaY) < 1) {
+          return;
+        }
+
+        card.style.transition = "none";
+        card.style.transform = `translateY(${deltaY}px)`;
+        card.getBoundingClientRect();
+
+        requestAnimationFrame(() => {
+          card.style.transition = "";
+          card.style.transform = "";
+        });
+      });
+    }
+
+    function getPersonaIndexById(group, personaId) {
+      return state.personas[group].findIndex((persona) => persona.id === personaId);
+    }
+
+    function movePersonaToIndex(group, draggedId, targetIndex) {
+      const list = state.personas[group];
+      const fromIndex = getPersonaIndexById(group, draggedId);
+
+      if (fromIndex < 0) {
+        return;
+      }
+
+      const boundedTargetIndex = Math.max(0, Math.min(targetIndex, list.length));
+      const adjustedTargetIndex = fromIndex < boundedTargetIndex ? boundedTargetIndex - 1 : boundedTargetIndex;
+
+      if (fromIndex === adjustedTargetIndex) {
+        return;
+      }
+
+      const [persona] = list.splice(fromIndex, 1);
+
+      list.splice(adjustedTargetIndex, 0, persona);
+      animatePersonaReorder(personaLists[group], () => renderPersonaList(group));
+      saveState();
+    }
+
+    function movePersonaNearTarget(group, draggedId, targetId, placeAfter = false) {
+      if (!draggedId || draggedId === targetId) {
+        return;
+      }
+
+      const targetIndex = getPersonaIndexById(group, targetId);
+
+      if (targetIndex < 0) {
+        return;
+      }
+
+      movePersonaToIndex(group, draggedId, placeAfter ? targetIndex + 1 : targetIndex);
+    }
+
+    function movePersonaToEnd(group, draggedId) {
+      const list = state.personas[group];
+      movePersonaToIndex(group, draggedId, list.length);
+    }
+
+    function getPersonaCards(list) {
+      return Array.from(list.querySelectorAll(".persona-card"));
+    }
+
+    function getPersonaInsertionIndex(list, pointerY, draggingCard) {
+      const cards = getPersonaCards(list).filter((card) => card !== draggingCard);
+
+      for (let index = 0; index < cards.length; index += 1) {
+        const rect = cards[index].getBoundingClientRect();
+
+        if (pointerY < rect.top + (rect.height / 2)) {
+          return index;
+        }
+      }
+
+      return cards.length;
+    }
+
+    function movePersonaCardToIndex(list, card, targetIndex) {
+      const cards = getPersonaCards(list).filter((entry) => entry !== card);
+      const currentIndex = getPersonaCards(list).indexOf(card);
+      const boundedTargetIndex = Math.max(0, Math.min(targetIndex, cards.length));
+
+      if (currentIndex === boundedTargetIndex) {
+        return;
+      }
+
+      const startingPositions = new Map(getPersonaCards(list).map((entry) => [entry, entry.getBoundingClientRect()]));
+      const beforeCard = cards[boundedTargetIndex] || null;
+
+      list.insertBefore(card, beforeCard);
+
+      getPersonaCards(list).forEach((entry) => {
+        const startingPosition = startingPositions.get(entry);
+
+        if (!startingPosition || entry === card) {
+          return;
+        }
+
+        const endingPosition = entry.getBoundingClientRect();
+        const deltaY = startingPosition.top - endingPosition.top;
+
+        if (Math.abs(deltaY) < 1) {
+          return;
+        }
+
+        entry.style.transition = "none";
+        entry.style.transform = `translateY(${deltaY}px)`;
+        entry.getBoundingClientRect();
+
+        requestAnimationFrame(() => {
+          entry.style.transition = "";
+          entry.style.transform = "";
+        });
+      });
+    }
+
+    function syncPersonaOrderFromDom(group) {
+      const order = getPersonaCards(personaLists[group]).map((card) => card.dataset.personaId);
+      const byId = new Map(state.personas[group].map((persona) => [persona.id, persona]));
+
+      state.personas[group] = order
+        .map((id) => byId.get(id))
+        .filter(Boolean);
+    }
+
+    function updatePersonaDrag(pointerY) {
+      if (!personaDrag) {
+        return;
+      }
+
+      personaDrag.clone.style.transform = `translate(${personaDrag.startX}px, ${pointerY - personaDrag.offsetY}px)`;
+      movePersonaCardToIndex(
+        personaDrag.list,
+        personaDrag.card,
+        getPersonaInsertionIndex(personaDrag.list, pointerY, personaDrag.card)
+      );
+    }
+
+    function clearPersonaDragArtifacts() {
+      personaDrag = null;
+      document.querySelectorAll(".persona-drag-clone").forEach((clone) => {
+        clone.remove();
+      });
+      document.querySelectorAll(".persona-card.is-placeholder").forEach((card) => {
+        card.classList.remove("is-placeholder");
+      });
+    }
+
+    function finishPersonaDrag() {
+      if (!personaDrag) {
+        clearPersonaDragArtifacts();
+        return;
+      }
+
+      const { group } = personaDrag;
+
+      syncPersonaOrderFromDom(group);
+      clearPersonaDragArtifacts();
+      renderPersonaList(group);
+      saveState();
+    }
+
+    function startPersonaDrag(event, group, card) {
+      if (event.button !== 0 || personaDrag) {
+        return;
+      }
+
+      event.preventDefault();
+      const rect = card.getBoundingClientRect();
+      const clone = card.cloneNode(true);
+
+      clone.classList.remove("is-placeholder");
+      clone.classList.add("persona-drag-clone");
+      clone.style.width = `${rect.width}px`;
+      clone.style.left = "0";
+      clone.style.top = "0";
+      clone.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
+      document.body.appendChild(clone);
+
+      card.classList.add("is-placeholder");
+      personaDrag = {
+        group,
+        card,
+        clone,
+        list: personaLists[group],
+        startX: rect.left,
+        offsetY: event.clientY - rect.top
+      };
+
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      updatePersonaDrag(event.clientY);
+    }
+
+    function addPersona(group) {
+      clearPersonaDragArtifacts();
+      state.personas[group].push(createPersona(group));
+      renderPersonaList(group);
+      saveState();
+    }
+
+    function removePersona(group, personaId) {
+      clearPersonaDragArtifacts();
+      state.personas[group] = state.personas[group].filter((persona) => persona.id !== personaId);
+      renderPersonaList(group);
+      saveState();
+    }
+
+    function updatePersona(group, personaId, updates) {
+      const persona = state.personas[group].find((entry) => entry.id === personaId);
+
+      if (!persona) {
+        return;
+      }
+
+      Object.assign(persona, updates);
+      saveState();
+    }
+
+    function getPersonaCropMetrics() {
+      if (!personaCrop) {
+        return null;
+      }
+
+      const canvasSize = personaCropCanvas.width;
+      const baseScale = Math.max(
+        canvasSize / personaCrop.image.naturalWidth,
+        canvasSize / personaCrop.image.naturalHeight
+      );
+      const scale = baseScale * personaCrop.zoom;
+      const width = personaCrop.image.naturalWidth * scale;
+      const height = personaCrop.image.naturalHeight * scale;
+      const minX = Math.min(0, canvasSize - width);
+      const minY = Math.min(0, canvasSize - height);
+
+      personaCrop.x = Math.min(0, Math.max(minX, personaCrop.x));
+      personaCrop.y = Math.min(0, Math.max(minY, personaCrop.y));
+
+      return { width, height };
+    }
+
+    function drawPersonaCrop() {
+      const metrics = getPersonaCropMetrics();
+
+      if (!metrics) {
+        return;
+      }
+
+      personaCropContext.clearRect(0, 0, personaCropCanvas.width, personaCropCanvas.height);
+      personaCropContext.fillStyle = "#f7f3eb";
+      personaCropContext.fillRect(0, 0, personaCropCanvas.width, personaCropCanvas.height);
+      personaCropContext.drawImage(
+        personaCrop.image,
+        personaCrop.x,
+        personaCrop.y,
+        metrics.width,
+        metrics.height
+      );
+    }
+
+    function closePersonaCropper() {
+      personaCropperModal.hidden = true;
+      personaCrop = null;
+      personaCropContext.clearRect(0, 0, personaCropCanvas.width, personaCropCanvas.height);
+    }
+
+    function openPersonaCropper(group, personaId, file) {
+      if (!file) {
+        return;
+      }
+
+      if (!file.type.startsWith("image/")) {
+        setStatus("Choose an image file.");
+        return;
+      }
+
+      clearPersonaDragArtifacts();
+      const reader = new FileReader();
+
+      reader.onerror = () => setStatus("Image could not be loaded.");
+      reader.onload = () => {
+        const image = new Image();
+
+        image.onerror = () => setStatus("Image could not be loaded.");
+        image.onload = () => {
+          const canvasSize = personaCropCanvas.width;
+          const baseScale = Math.max(canvasSize / image.naturalWidth, canvasSize / image.naturalHeight);
+          const width = image.naturalWidth * baseScale;
+          const height = image.naturalHeight * baseScale;
+
+          personaCrop = {
+            group,
+            personaId,
+            image,
+            x: (canvasSize - width) / 2,
+            y: (canvasSize - height) / 2,
+            zoom: 1,
+            pointer: null
+          };
+          personaCropZoom.value = "1";
+          personaCropperModal.hidden = false;
+          drawPersonaCrop();
+        };
+        image.src = String(reader.result || "");
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function applyPersonaCrop() {
+      if (!personaCrop) {
+        return;
+      }
+
+      const imageData = personaCropCanvas.toDataURL("image/jpeg", 0.82);
+      const { group, personaId } = personaCrop;
+
+      closePersonaCropper();
+      updatePersona(group, personaId, { image: imageData });
+      renderPersonaList(group);
+      setStatus("Picture added.");
+    }
+
+    function updatePersonaImage(group, personaId, file) {
+      if (!file) {
+        return;
+      }
+
+      openPersonaCropper(group, personaId, file);
+    }
+
+    function renderPersonaList(group) {
+      if (!personaDrag) {
+        clearPersonaDragArtifacts();
+      }
+
+      const list = personaLists[group];
+      list.innerHTML = "";
+
+      if (state.personas[group].length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "persona-empty";
+        empty.textContent = group === "party" ? "Add party members here." : "Add NPCs, contacts, rivals, and other people here.";
+        list.appendChild(empty);
+        return;
+      }
+
+      state.personas[group].forEach((persona) => {
+        const card = document.createElement("article");
+        card.className = "persona-card";
+        card.dataset.group = group;
+        card.dataset.personaId = persona.id;
+
+        const dragHandle = document.createElement("button");
+        dragHandle.type = "button";
+        dragHandle.className = "persona-drag-handle";
+        dragHandle.setAttribute("aria-label", `Move ${persona.name || "persona"}`);
+        dragHandle.addEventListener("pointerdown", (event) => startPersonaDrag(event, group, card));
+
+        const fields = document.createElement("div");
+        fields.className = "persona-fields";
+
+        const name = document.createElement("input");
+        name.className = "persona-name";
+        name.type = "text";
+        name.value = persona.name;
+        name.placeholder = "Name (editable)";
+        name.addEventListener("input", () => updatePersona(group, persona.id, { name: name.value }));
+
+        const description = document.createElement("textarea");
+        description.className = "persona-description";
+        description.value = persona.description;
+        description.placeholder = "Description (editable)";
+        description.addEventListener("input", () => updatePersona(group, persona.id, { description: description.value }));
+
+        fields.appendChild(name);
+        fields.appendChild(description);
+
+        const imageLabel = document.createElement("label");
+        imageLabel.className = persona.image ? "persona-image-label has-image" : "persona-image-label";
+        const imageInput = document.createElement("input");
+        imageInput.type = "file";
+        imageInput.accept = "image/*";
+        imageInput.addEventListener("change", (event) => {
+          const file = event.target.files && event.target.files[0];
+          updatePersonaImage(group, persona.id, file);
+          event.target.value = "";
+        });
+
+        if (persona.image) {
+          const image = document.createElement("img");
+          image.src = persona.image;
+          image.alt = "";
+          imageLabel.appendChild(image);
+        }
+
+        const uploadText = document.createElement("span");
+        uploadText.textContent = "Picture upload";
+        imageLabel.appendChild(imageInput);
+        imageLabel.appendChild(uploadText);
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "persona-delete";
+        remove.textContent = "x";
+        remove.setAttribute("aria-label", `Delete ${persona.name || "persona"}`);
+        remove.addEventListener("click", () => removePersona(group, persona.id));
+
+        card.appendChild(dragHandle);
+        card.appendChild(fields);
+        card.appendChild(imageLabel);
+        card.appendChild(remove);
+        list.appendChild(card);
+      });
+    }
+
+    function renderPersonas() {
+      renderPersonaList("party");
+      renderPersonaList("others");
     }
 
     function closeActionsMenu() {
@@ -2163,6 +3114,70 @@
         renderFeatDescriptions();
       });
       saveState();
+    }
+
+    function clearFeatUseChecks(featId) {
+      Object.keys(state.featUseChecks).forEach((key) => {
+        if (key.startsWith(`${featId}:`)) {
+          delete state.featUseChecks[key];
+        }
+      });
+    }
+
+    function getFeatUseGroups(feat) {
+      const groups = {};
+      const matches = feat.description.matchAll(/\bonce per (combat|rest)\b/gi);
+
+      Array.from(matches).forEach((match) => {
+        const useType = match[1].toLowerCase();
+        groups[useType] = (groups[useType] || 0) + 1;
+      });
+
+      return groups;
+    }
+
+    function setFeatUseChecked(featId, useType, index, checked) {
+      const key = `${featId}:${useType}`;
+      const checks = Array.isArray(state.featUseChecks[key]) ? [...state.featUseChecks[key]] : [];
+
+      checks[index] = checked;
+      state.featUseChecks[key] = checks;
+      saveState();
+    }
+
+    function renderFeatUseTracker(feat) {
+      const groups = getFeatUseGroups(feat);
+      const entries = Object.entries(groups);
+
+      if (entries.length === 0) {
+        return null;
+      }
+
+      const tracker = document.createElement("div");
+      tracker.className = "feat-use-tracker";
+
+      entries.forEach(([useType, count]) => {
+        const key = `${feat.id}:${useType}`;
+        const checks = Array.isArray(state.featUseChecks[key]) ? state.featUseChecks[key] : [];
+
+        for (let index = 0; index < count; index += 1) {
+          const label = document.createElement("label");
+          label.className = "feat-use-check";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = Boolean(checks[index]);
+          checkbox.setAttribute("aria-label", `${feat.name} ${useType} use ${index + 1}`);
+          checkbox.addEventListener("change", () => {
+            setFeatUseChecked(feat.id, useType, index, checkbox.checked);
+          });
+
+          label.appendChild(checkbox);
+          tracker.appendChild(label);
+        }
+      });
+
+      return tracker;
     }
 
     function buildFeatSelect() {
@@ -2293,6 +3308,7 @@
 
     function removeFeat(featId) {
       state.activeFeatIds = state.activeFeatIds.filter((id) => id !== featId);
+      clearFeatUseChecks(featId);
       animatePanelGrowth(featsPanel, () => {
         updateLevelProgression();
         buildFeatSelect();
@@ -2345,6 +3361,12 @@
         header.appendChild(remove);
         description.appendChild(header);
         description.appendChild(copy);
+        const tracker = renderFeatUseTracker(feat);
+
+        if (tracker) {
+          description.appendChild(tracker);
+        }
+
         featDescriptionsNode.appendChild(description);
       });
     }
@@ -2407,6 +3429,7 @@
         renderActiveFeats();
         renderFeatDescriptions();
         renderMantleDescription();
+        renderPersonas();
         updateAllocationSummary();
         updateLevelProgression();
         updateDerivedMaxHp();
@@ -2419,9 +3442,11 @@
         const payload = JSON.parse(raw);
         setFormFields(payload.fields || {});
         state.activeFeatIds = Array.isArray(payload.activeFeatIds) ? payload.activeFeatIds : [];
+        state.featUseChecks = normalizeFeatUseChecks(payload.featUseChecks);
         state.activeMantleId = typeof payload.activeMantleId === "string" ? payload.activeMantleId : "";
         state.characterImage = typeof payload.characterImage === "string" ? payload.characterImage : "";
         state.characterImageVisible = typeof payload.characterImageVisible === "boolean" ? payload.characterImageVisible : true;
+        state.personas = normalizePersonas(payload.personas);
       } catch (error) {
         console.error("Could not load sheet state.", error);
       }
@@ -2432,6 +3457,7 @@
       renderActiveFeats();
       renderFeatDescriptions();
       renderMantleDescription();
+      renderPersonas();
       updateAllocationSummary();
       updateLevelProgression();
       updateDerivedMaxHp();
@@ -2461,15 +3487,18 @@
           const payload = JSON.parse(String(reader.result));
           setFormFields(payload.fields || {});
           state.activeFeatIds = Array.isArray(payload.activeFeatIds) ? payload.activeFeatIds : [];
+          state.featUseChecks = normalizeFeatUseChecks(payload.featUseChecks);
           state.activeMantleId = typeof payload.activeMantleId === "string" ? payload.activeMantleId : "";
           state.characterImage = typeof payload.characterImage === "string" ? payload.characterImage : "";
           state.characterImageVisible = typeof payload.characterImageVisible === "boolean" ? payload.characterImageVisible : true;
+          state.personas = normalizePersonas(payload.personas);
           buildFeatSelect();
           buildMantleSelect();
           renderCharacterImage();
           renderActiveFeats();
           renderFeatDescriptions();
           renderMantleDescription();
+          renderPersonas();
           updateAllocationSummary();
           updateLevelProgression();
           updateDerivedMaxHp();
@@ -2511,9 +3540,11 @@
       currentHpInput.value = maxHpInput.value;
 
       state.activeFeatIds = [];
+      state.featUseChecks = {};
       state.activeMantleId = "";
       state.characterImage = "";
       state.characterImageVisible = true;
+      state.personas = normalizePersonas();
       characterImageInput.value = "";
       buildFeatSelect();
       buildMantleSelect();
@@ -2521,6 +3552,7 @@
       renderActiveFeats();
       renderFeatDescriptions();
       renderMantleDescription();
+      renderPersonas();
       updateAllocationSummary();
       updateLevelProgression();
       updateHealthbar();
@@ -2532,6 +3564,59 @@
     document.getElementById("save-sheet").addEventListener("click", saveCharacterFile);
     document.getElementById("print-sheet").addEventListener("click", () => window.print());
     document.getElementById("reset-sheet").addEventListener("click", resetSheet);
+    document.querySelectorAll("[data-add-persona]").forEach((button) => {
+      button.addEventListener("click", () => addPersona(button.dataset.addPersona));
+    });
+    personaCropZoom.addEventListener("input", () => {
+      if (!personaCrop) {
+        return;
+      }
+
+      const oldZoom = personaCrop.zoom;
+      const newZoom = Number(personaCropZoom.value) || 1;
+      const canvasCenter = personaCropCanvas.width / 2;
+
+      personaCrop.x = canvasCenter - ((canvasCenter - personaCrop.x) * (newZoom / oldZoom));
+      personaCrop.y = canvasCenter - ((canvasCenter - personaCrop.y) * (newZoom / oldZoom));
+      personaCrop.zoom = newZoom;
+      drawPersonaCrop();
+    });
+    personaCropFrame.addEventListener("pointerdown", (event) => {
+      if (!personaCrop) {
+        return;
+      }
+
+      event.preventDefault();
+      personaCrop.pointer = {
+        id: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        imageX: personaCrop.x,
+        imageY: personaCrop.y
+      };
+      personaCropFrame.setPointerCapture?.(event.pointerId);
+    });
+    personaCropFrame.addEventListener("pointermove", (event) => {
+      if (!personaCrop || !personaCrop.pointer || personaCrop.pointer.id !== event.pointerId) {
+        return;
+      }
+
+      personaCrop.x = personaCrop.pointer.imageX + (event.clientX - personaCrop.pointer.startX);
+      personaCrop.y = personaCrop.pointer.imageY + (event.clientY - personaCrop.pointer.startY);
+      drawPersonaCrop();
+    });
+    personaCropFrame.addEventListener("pointerup", () => {
+      if (personaCrop) {
+        personaCrop.pointer = null;
+      }
+    });
+    personaCropFrame.addEventListener("pointercancel", () => {
+      if (personaCrop) {
+        personaCrop.pointer = null;
+      }
+    });
+    personaCropCancel.addEventListener("click", closePersonaCropper);
+    personaCropApply.addEventListener("click", applyPersonaCrop);
     actionsMenuToggle.addEventListener("click", (event) => {
       event.stopPropagation();
       toggleActionsMenu();
@@ -2597,6 +3682,35 @@
       }
     });
 
+    sheetTabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => {
+        setActiveSheetTab(tab);
+      });
+
+      tab.addEventListener("keydown", (event) => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+          return;
+        }
+
+        event.preventDefault();
+        let nextIndex = index;
+
+        if (event.key === "ArrowLeft") {
+          nextIndex = (index - 1 + sheetTabs.length) % sheetTabs.length;
+        } else if (event.key === "ArrowRight") {
+          nextIndex = (index + 1) % sheetTabs.length;
+        } else if (event.key === "Home") {
+          nextIndex = 0;
+        } else if (event.key === "End") {
+          nextIndex = sheetTabs.length - 1;
+        }
+
+        const nextTab = sheetTabs[nextIndex];
+        setActiveSheetTab(nextTab);
+        nextTab.focus();
+      });
+    });
+
     loadInput.addEventListener("change", (event) => {
       const file = event.target.files && event.target.files[0];
 
@@ -2657,8 +3771,16 @@
         closeMantlePicker();
         closeActionsMenu();
         closeCombatDrawer();
+        closePersonaCropper();
       }
     });
+
+    document.addEventListener("pointermove", (event) => {
+      updatePersonaDrag(event.clientY);
+    });
+
+    document.addEventListener("pointerup", finishPersonaDrag);
+    document.addEventListener("pointercancel", finishPersonaDrag);
 
     window.addEventListener("beforeunload", () => {
       saveState();
@@ -2677,6 +3799,7 @@
         return;
       }
 
+      fitMantleMenuToSheet();
       page.classList.add("is-resizing");
       window.clearTimeout(window.resizeSettleTimeout);
       window.resizeSettleTimeout = window.setTimeout(() => {
@@ -2684,7 +3807,12 @@
       }, 220);
     });
 
+    window.addEventListener("scroll", () => {
+      fitMantleMenuToSheet();
+    }, { passive: true });
+
     async function initializeSheet() {
+      setActiveSheetTab(sheetTabs[0]);
       await loadFeats();
       await loadMantles();
       loadState();
