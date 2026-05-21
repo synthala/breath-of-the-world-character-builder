@@ -773,8 +773,8 @@
     .combat-skills-header,
     .combat-skill-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 112px 78px;
-      gap: 8px;
+      grid-template-columns: minmax(0, 1fr) 124px 72px;
+      gap: 10px;
       align-items: center;
     }
 
@@ -798,21 +798,20 @@
     }
 
     .combat-skill-stat {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       align-items: center;
-      justify-content: center;
       gap: 6px;
     }
 
     .combat-skill-stat-code {
-      min-width: 44px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
 
     .combat-skill-modifier {
-      padding: 8px 10px;
+      padding: 8px 6px;
       text-align: center;
       font-weight: 700;
     }
@@ -896,8 +895,8 @@
 
     .stat-row {
       display: grid;
-      grid-template-columns: 72px minmax(0, 1fr) 110px;
-      gap: 10px;
+      grid-template-columns: 52px minmax(0, 1fr) 96px;
+      gap: 12px;
       align-items: center;
       transition: grid-template-columns 300ms ease, gap 300ms ease, transform 260ms ease, opacity 260ms ease;
       will-change: transform;
@@ -1174,8 +1173,8 @@
     .skills-header,
     .skill-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 66px 78px;
-      gap: 10px;
+      grid-template-columns: minmax(0, 1fr) 56px 72px;
+      gap: 12px;
       align-items: center;
     }
 
@@ -1213,11 +1212,11 @@
     }
 
     .skill-row.has-mantle-bonus {
-      grid-template-columns: minmax(0, 1fr) 66px 78px minmax(52px, auto);
+      grid-template-columns: minmax(0, 1fr) 56px 72px 52px;
     }
 
     .combat-skill-row.has-mantle-bonus {
-      grid-template-columns: minmax(0, 1fr) 112px 78px minmax(52px, auto);
+      grid-template-columns: minmax(0, 1fr) 124px 72px 52px;
     }
 
     .skill-row.has-mantle-bonus input,
@@ -1270,7 +1269,11 @@
     }
 
     .die-badge {
-      padding: 8px 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 8px 8px;
       border: 2px solid var(--line);
       background: rgba(247, 243, 235, 0.68);
       text-align: center;
@@ -1319,18 +1322,95 @@
     }
 
     @media (max-width: 560px) {
+      :root {
+        --panel-gap: 10px;
+        --ui-scale: 1;
+      }
+
       .creator-layout {
-        width: min(100vw - 8px, 100%);
-        margin: 4px auto;
+        width: 100%;
+        margin: 0 auto;
       }
 
       .combat-drawer {
-        width: min(360px, calc(100vw - 48px));
+        width: calc(100vw - 44px);
+        height: 80dvh;
+      }
+
+      .combat-tab {
+        width: 44px;
+        min-height: 104px;
+        padding: 8px 4px;
+        font-size: 0.82rem;
       }
 
       .page {
-        padding: 8px;
+        padding: 8px 6px 12px;
         border-width: 3px;
+      }
+
+      .character-watermark {
+        left: -24px;
+        width: calc(100% + 48px);
+        height: 820px;
+      }
+
+      .name-panel,
+      .panel {
+        padding: 12px;
+      }
+
+      .name-header {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+      }
+
+      .sheet-title {
+        grid-column: 1 / -1;
+        font-size: 0.78rem;
+      }
+
+      #character-name {
+        font-size: 2.35rem;
+        padding-inline: 4px;
+      }
+
+      .level-field {
+        min-width: 0;
+        justify-content: flex-start;
+      }
+
+      .level-field input {
+        width: 52px;
+      }
+
+      .actions {
+        align-self: start;
+      }
+
+      .actions-menu {
+        position: fixed;
+        top: 58px;
+        right: 8px;
+        width: min(240px, calc(100vw - 16px));
+        max-height: calc(100dvh - 74px);
+        overflow: auto;
+      }
+
+      .sheet-tabs {
+        flex-wrap: nowrap;
+        gap: 6px;
+        margin-bottom: 10px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .sheet-tab {
+        flex: 0 0 auto;
+        min-height: 38px;
+        padding: 8px 10px;
+        font-size: 0.78rem;
+        white-space: nowrap;
       }
 
       .name-panel,
@@ -1352,21 +1432,128 @@
       .stat-row,
       .skills-header,
       .skill-row,
-      .persona-card,
       .feat-item,
       .level-readout {
         grid-template-columns: 1fr;
       }
 
+      .stat-row {
+        grid-template-columns: 44px minmax(0, 1fr) 82px;
+        gap: 8px;
+      }
+
+      .stat-row select {
+        grid-column: auto;
+      }
+
+      .level-readout {
+        gap: 6px;
+      }
+
+      .level-stat {
+        padding: 8px 10px;
+      }
+
+      .skills-header {
+        display: none;
+      }
+
+      .skill-row {
+        grid-template-columns: minmax(0, 1fr) 46px 58px;
+        gap: 6px;
+        padding: 8px 0;
+      }
+
+      .skill-name span {
+        font-size: 0.72rem;
+      }
+
+      .skills-list {
+        max-height: none;
+      }
+
+      .combat-skills-header,
+      .combat-skill-row {
+        grid-template-columns: minmax(0, 1fr) 92px 56px;
+        gap: 6px;
+      }
+
+      .combat-skill-row strong {
+        font-size: 0.86rem;
+      }
+
+      .combat-skill-stat {
+        gap: 4px;
+      }
+
+      .die-badge {
+        min-height: 34px;
+        padding: 6px 5px;
+        font-size: 0.8rem;
+      }
+
+      .combat-skill-modifier {
+        padding: 8px 6px;
+      }
+
+      .notes-inventory-layout {
+        min-height: 0;
+      }
+
+      .notes-inventory-layout .panel {
+        grid-template-rows: auto minmax(260px, auto);
+      }
+
+      .notes-inventory-layout textarea {
+        min-height: 260px;
+      }
+
+      .party-tab-layout {
+        min-height: 0;
+      }
+
+      .persona-card {
+        grid-template-columns: 30px minmax(0, 1fr) 76px 30px;
+        gap: 8px;
+        min-height: 84px;
+        padding: 8px;
+      }
+
+      .persona-drag-handle {
+        width: 30px;
+        min-height: 62px;
+      }
+
+      .persona-delete {
+        width: 30px;
+        min-height: 30px;
+      }
+
       .persona-image-label {
-        width: 100%;
-        max-width: 180px;
-        justify-self: start;
+        width: 76px;
+        max-width: none;
       }
 
       .skill-row.has-mantle-bonus,
       .combat-skill-row.has-mantle-bonus {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .skill-row.has-mantle-bonus .die-badge,
+      .skill-row.has-mantle-bonus input,
+      .combat-skill-row.has-mantle-bonus .combat-skill-stat,
+      .combat-skill-row.has-mantle-bonus input {
+        grid-column: auto;
+      }
+
+      .feat-hover-preview {
+        max-height: 220px;
+        overflow: auto;
+      }
+
+      .image-cropper-panel {
+        width: min(100%, calc(100vw - 20px));
+        padding: 12px;
       }
     }
 
