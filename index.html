@@ -603,6 +603,26 @@
       gap: 8px;
     }
 
+    .cloud-load-list {
+      display: grid;
+      gap: 8px;
+      max-height: min(52vh, 420px);
+      overflow: auto;
+    }
+
+    .cloud-load-option {
+      justify-content: space-between;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.68);
+      text-align: left;
+    }
+
+    .cloud-load-option span {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 400;
+    }
+
     .left-column {
       position: relative;
       z-index: 20;
@@ -1399,6 +1419,8 @@
                 <button type="button" id="clear-character-image">Clear Image</button>
                 <label class="button-like" for="load-sheet">Load<input id="load-sheet" type="file" accept="application/json"></label>
                 <button type="button" id="save-sheet">Save</button>
+                <button type="button" id="load-cloud-character">Cloud Load</button>
+                <button type="button" id="save-cloud-character">Cloud Save</button>
                 <button type="button" id="print-sheet">Print</button>
                 <button type="button" id="reset-sheet">Reset</button>
               </div>
@@ -1709,6 +1731,16 @@
       </div>
     </div>
 
+    <div class="image-cropper-modal" id="cloud-load-modal" hidden>
+      <div class="image-cropper-panel" role="dialog" aria-modal="true" aria-labelledby="cloud-load-title">
+        <h2 id="cloud-load-title">Cloud Saves</h2>
+        <div class="cloud-load-list" id="cloud-load-list"></div>
+        <div class="image-cropper-actions">
+          <button type="button" id="cloud-load-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <div class="combat-drawer" id="combat-drawer">
       <button type="button" class="combat-tab" id="combat-tab" aria-expanded="false" aria-controls="combat-panel">Combat</button>
       <section class="panel combat-panel" id="combat-panel">
@@ -1803,7 +1835,18 @@
   </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script>
+    const SUPABASE_URL = "https://dxwrmniworposinacvrn.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR4d3Jtbml3b3Jwb3NpbmFjdnJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjgwODAsImV4cCI6MjA5NDk0NDA4MH0.XobBeG81oAIgQNaF0e3ySMc7B40fy9sYB35AdBoPJhU";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      }
+    });
     const STORAGE_KEY = "breath-character-sheet-state";
     const FEATS_FILE = "feats.json";
     const MANTLES_FILE = "mantles.json";
@@ -2022,6 +2065,9 @@
     const personaCropApply = document.getElementById("persona-crop-apply");
     const personaCropContext = personaCropCanvas.getContext("2d");
     let personaCrop = null;
+    const cloudLoadModal = document.getElementById("cloud-load-modal");
+    const cloudLoadList = document.getElementById("cloud-load-list");
+    const cloudLoadCancel = document.getElementById("cloud-load-cancel");
     const statRowOrder = new Map(statRows.map((row, index) => [row, index]));
     const DIE_RANK = {
       d4: 4,
@@ -2038,6 +2084,14 @@
       setStatus.timeoutId = window.setTimeout(() => {
         statusNode.textContent = "";
       }, 2400);
+    }
+
+    function createCloudCharacterId() {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+
+      return `character-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     }
 
     function setActiveSheetTab(tab) {
@@ -2226,6 +2280,7 @@
       if (showMessage) {
         setStatus("Sheet saved.");
       }
+
     }
 
     function getCharacterSheetPayload() {
@@ -2255,6 +2310,149 @@
 
     function getCharacterSavePath() {
       return `${CHARACTER_SAVE_FOLDER}/${getCharacterSaveFileName()}`;
+    }
+
+    function refreshSheetFromState() {
+      buildFeatSelect();
+      buildMantleSelect();
+      renderCharacterImage();
+      renderActiveFeats();
+      renderFeatDescriptions();
+      renderMantleDescription();
+      renderPersonas();
+      updateAllocationSummary();
+      updateLevelProgression();
+      updateDerivedMaxHp();
+      updateHealthbar();
+      updateCombatSkillDice();
+    }
+
+    function loadCharacterPayload(payload = {}) {
+      setFormFields(payload.fields || {});
+      state.activeFeatIds = Array.isArray(payload.activeFeatIds) ? payload.activeFeatIds : [];
+      state.featUseChecks = normalizeFeatUseChecks(payload.featUseChecks);
+      state.activeMantleId = typeof payload.activeMantleId === "string" ? payload.activeMantleId : "";
+      state.characterImage = typeof payload.characterImage === "string" ? payload.characterImage : "";
+      state.characterImageVisible = typeof payload.characterImageVisible === "boolean" ? payload.characterImageVisible : true;
+      state.personas = normalizePersonas(payload.personas);
+      refreshSheetFromState();
+    }
+
+    async function saveCloudCharacter(showMessage = false) {
+      const characterName = document.getElementById("character-name").value.trim();
+
+      if (!characterName) {
+        if (showMessage) {
+          setStatus("Name the character first.");
+        }
+        return false;
+      }
+
+      const payload = getCharacterSheetPayload();
+      const { data: existing, error: findError } = await supabaseClient
+        .from("characters")
+        .select("id")
+        .eq("name", characterName)
+        .limit(1)
+        .maybeSingle();
+
+      if (findError) {
+        console.error("Cloud save lookup failed.", findError);
+        setStatus("Cloud save failed.");
+        return false;
+      }
+
+      const row = {
+        id: existing?.id || createCloudCharacterId(),
+        name: characterName,
+        data: payload,
+        updated_at: new Date().toISOString()
+      };
+      const { error } = await supabaseClient
+        .from("characters")
+        .upsert(row);
+
+      if (error) {
+        console.error("Cloud save failed.", error);
+        setStatus("Cloud save failed.");
+        return false;
+      }
+
+      if (showMessage) {
+        setStatus("Cloud saved.");
+      }
+
+      return true;
+    }
+
+    async function loadCloudCharacterById(characterId) {
+      const { data, error } = await supabaseClient
+        .from("characters")
+        .select("data, name")
+        .eq("id", characterId)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Cloud load failed.", error);
+        setStatus("Cloud load failed.");
+        return false;
+      }
+
+      if (!data) {
+        setStatus("Cloud character not found.");
+        return true;
+      }
+
+      loadCharacterPayload(data.data || {});
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data.data || {}));
+      setStatus("Cloud character loaded.");
+      return true;
+    }
+
+    function closeCloudLoadMenu() {
+      cloudLoadModal.hidden = true;
+      cloudLoadList.innerHTML = "";
+    }
+
+    async function openCloudLoadMenu() {
+      cloudLoadList.innerHTML = "<p class=\"persona-empty\">Loading cloud saves...</p>";
+      cloudLoadModal.hidden = false;
+
+      const { data, error } = await supabaseClient
+        .from("characters")
+        .select("id, name, updated_at")
+        .order("updated_at", { ascending: false });
+
+      if (error) {
+        console.error("Cloud load list failed.", error);
+        cloudLoadList.innerHTML = "<p class=\"persona-empty\">Could not load cloud saves.</p>";
+        return;
+      }
+
+      if (!Array.isArray(data) || data.length === 0) {
+        cloudLoadList.innerHTML = "<p class=\"persona-empty\">No cloud saves yet.</p>";
+        return;
+      }
+
+      cloudLoadList.innerHTML = "";
+      data.forEach((character) => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "cloud-load-option";
+        option.textContent = character.name || "Unnamed Character";
+
+        const updated = document.createElement("span");
+        updated.textContent = character.updated_at
+          ? new Date(character.updated_at).toLocaleString()
+          : "";
+
+        option.appendChild(updated);
+        option.addEventListener("click", async () => {
+          closeCloudLoadMenu();
+          await loadCloudCharacterById(character.id);
+        });
+        cloudLoadList.appendChild(option);
+      });
     }
 
     function getDieRank(dieValue) {
@@ -3423,46 +3621,17 @@
       const raw = localStorage.getItem(STORAGE_KEY);
 
       if (!raw) {
-        buildFeatSelect();
-        buildMantleSelect();
-        renderCharacterImage();
-        renderActiveFeats();
-        renderFeatDescriptions();
-        renderMantleDescription();
-        renderPersonas();
-        updateAllocationSummary();
-        updateLevelProgression();
-        updateDerivedMaxHp();
-        updateHealthbar();
-        updateCombatSkillDice();
+        refreshSheetFromState();
         return;
       }
 
       try {
         const payload = JSON.parse(raw);
-        setFormFields(payload.fields || {});
-        state.activeFeatIds = Array.isArray(payload.activeFeatIds) ? payload.activeFeatIds : [];
-        state.featUseChecks = normalizeFeatUseChecks(payload.featUseChecks);
-        state.activeMantleId = typeof payload.activeMantleId === "string" ? payload.activeMantleId : "";
-        state.characterImage = typeof payload.characterImage === "string" ? payload.characterImage : "";
-        state.characterImageVisible = typeof payload.characterImageVisible === "boolean" ? payload.characterImageVisible : true;
-        state.personas = normalizePersonas(payload.personas);
+        loadCharacterPayload(payload);
       } catch (error) {
         console.error("Could not load sheet state.", error);
+        refreshSheetFromState();
       }
-
-      buildFeatSelect();
-      buildMantleSelect();
-      renderCharacterImage();
-      renderActiveFeats();
-      renderFeatDescriptions();
-      renderMantleDescription();
-      renderPersonas();
-      updateAllocationSummary();
-      updateLevelProgression();
-      updateDerivedMaxHp();
-      updateHealthbar();
-      updateCombatSkillDice();
     }
 
     function saveCharacterFile() {
@@ -3485,25 +3654,7 @@
       reader.onload = () => {
         try {
           const payload = JSON.parse(String(reader.result));
-          setFormFields(payload.fields || {});
-          state.activeFeatIds = Array.isArray(payload.activeFeatIds) ? payload.activeFeatIds : [];
-          state.featUseChecks = normalizeFeatUseChecks(payload.featUseChecks);
-          state.activeMantleId = typeof payload.activeMantleId === "string" ? payload.activeMantleId : "";
-          state.characterImage = typeof payload.characterImage === "string" ? payload.characterImage : "";
-          state.characterImageVisible = typeof payload.characterImageVisible === "boolean" ? payload.characterImageVisible : true;
-          state.personas = normalizePersonas(payload.personas);
-          buildFeatSelect();
-          buildMantleSelect();
-          renderCharacterImage();
-          renderActiveFeats();
-          renderFeatDescriptions();
-          renderMantleDescription();
-          renderPersonas();
-          updateAllocationSummary();
-          updateLevelProgression();
-          updateDerivedMaxHp();
-          updateHealthbar();
-          updateCombatSkillDice();
+          loadCharacterPayload(payload);
           saveState();
           setStatus("Character loaded.");
         } catch (error) {
@@ -3562,6 +3713,8 @@
     }
 
     document.getElementById("save-sheet").addEventListener("click", saveCharacterFile);
+    document.getElementById("load-cloud-character").addEventListener("click", openCloudLoadMenu);
+    document.getElementById("save-cloud-character").addEventListener("click", () => saveCloudCharacter(true));
     document.getElementById("print-sheet").addEventListener("click", () => window.print());
     document.getElementById("reset-sheet").addEventListener("click", resetSheet);
     document.querySelectorAll("[data-add-persona]").forEach((button) => {
@@ -3617,6 +3770,7 @@
     });
     personaCropCancel.addEventListener("click", closePersonaCropper);
     personaCropApply.addEventListener("click", applyPersonaCrop);
+    cloudLoadCancel.addEventListener("click", closeCloudLoadMenu);
     actionsMenuToggle.addEventListener("click", (event) => {
       event.stopPropagation();
       toggleActionsMenu();
@@ -3772,6 +3926,7 @@
         closeActionsMenu();
         closeCombatDrawer();
         closePersonaCropper();
+        closeCloudLoadMenu();
       }
     });
 
@@ -3810,6 +3965,10 @@
     window.addEventListener("scroll", () => {
       fitMantleMenuToSheet();
     }, { passive: true });
+
+    window.setInterval(() => {
+      saveCloudCharacter();
+    }, 15000);
 
     async function initializeSheet() {
       setActiveSheetTab(sheetTabs[0]);
