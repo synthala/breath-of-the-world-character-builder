@@ -1,6 +1,6 @@
 # Player Guide: Character Sheet
 
-Use this sheet to build and track a Breath of the World character. The sheet saves your choices in the browser and can also export a character save file.
+Use this sheet to build and track a Breath of the World character. Cloud Save starts automatic profile sync, and Save can also export a character save file.
 
 ## 1. Name And Level
 
@@ -63,7 +63,7 @@ Use this sheet to build and track a Breath of the World character. The sheet sav
 
 ## 9. Saving And Loading
 
-- The sheet autosaves in the browser.
+- Use Cloud Save once to create or attach a cloud profile; after that, edits sync to that profile automatically.
 - Use Save to export a character JSON file.
 - Use Load to import a saved character JSON file.
 - Use Reset to clear the sheet back to a fresh character.
