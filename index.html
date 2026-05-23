@@ -81,6 +81,80 @@
       z-index: 1;
     }
 
+    .sync-indicator {
+      --loader-size: 30px;
+      position: fixed;
+      top: 18px;
+      left: max(12px, calc(50vw - (min(980px, calc(100vw - 24px)) / 2) - 84px));
+      z-index: 7100;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: var(--loader-size);
+      padding: 6px;
+      border-radius: 8px;
+      background: rgba(198, 173, 129, 0.82);
+      color: #fcfbf8;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px) scale(0.96);
+      transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+    }
+
+    .sync-indicator.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    .loader {
+      position: relative;
+      display: block;
+      width: var(--loader-size);
+      height: var(--loader-size);
+      flex: 0 0 auto;
+    }
+
+    .loader::before,
+    .loader::after {
+      content: "";
+      position: absolute;
+      display: block;
+    }
+
+    .loader--2 {
+      color: #fcfbf8;
+      animation: loader-2-spin 0.9s linear infinite;
+    }
+
+    .loader--2::before {
+      inset: 0;
+      border: 3px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+    }
+
+    .loader--2::after {
+      top: 3px;
+      right: 2px;
+      width: 5px;
+      height: 5px;
+      background: currentColor;
+      border-radius: 50%;
+    }
+
+    @keyframes loader-2-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     .page::before {
       content: "";
       position: absolute;
@@ -1354,6 +1428,10 @@
         justify-content: flex-end;
       }
 
+      .sync-indicator {
+        left: 12px;
+      }
+
       .combat-drawer {
         position: fixed;
         left: auto;
@@ -1630,6 +1708,10 @@
 <body>
   <div class="creator-layout">
     <div class="page">
+      <div class="sync-indicator" id="sync-indicator" aria-hidden="true">
+        <span class="loader loader--2" aria-hidden="true"></span>
+        <span>Syncing</span>
+      </div>
       <img class="character-watermark" id="character-watermark" alt="" hidden>
       <div class="sheet-content">
         <section class="name-panel">
@@ -1988,6 +2070,7 @@
       <button type="button" class="combat-tab" id="combat-tab" aria-expanded="false" aria-controls="combat-panel">Combat</button>
       <section class="panel combat-panel" id="combat-panel">
         <h2>Combat</h2>
+        <p class="help">Max HP starts at 8 + half your Constitution die, then gains another half your Constitution die each level after, plus any feat bonuses.</p>
         <div class="hp-row">
           <div>
             <label for="current-hp">Current HP</label>
@@ -1995,7 +2078,7 @@
           </div>
           <div>
             <label for="max-hp">Max HP</label>
-            <input id="max-hp" name="maxHp" type="number" value="14" min="1" readonly aria-readonly="true" title="Max HP is 10 plus half your Constitution die.">
+            <input id="max-hp" name="maxHp" type="number" value="14" min="1" readonly aria-readonly="true" title="Hover to see the Max HP breakdown.">
           </div>
         </div>
         <div class="healthbar" aria-label="Health">
@@ -2004,6 +2087,7 @@
         <p class="healthbar-text" id="healthbar-text">14 / 14 HP</p>
       <div class="combat-skills">
         <h2>Combat Skills</h2>
+        <p class="help">Combat skills represent your training with different fighting styles. When you attack, roll the linked attribute die with the combat skill's modifier against the enemy's roll. If your attack succeeds, the enemy takes damage equal to the difference between the two rolls.</p>
         <div class="combat-skills-header">
           <div>Skill</div>
           <div>Stat</div>
@@ -2320,6 +2404,7 @@
     const startupCharacterModal = document.getElementById("startup-character-modal");
     const startupCharacterList = document.getElementById("startup-character-list");
     const startupCreateCharacterButton = document.getElementById("startup-create-character");
+    const syncIndicator = document.getElementById("sync-indicator");
     const statRowOrder = new Map(statRows.map((row, index) => [row, index]));
     const DIE_RANK = {
       d4: 4,
@@ -2353,6 +2438,49 @@
       debounceTimerId: 0,
       isSaving: false
     };
+    const SYNC_INDICATOR_MIN_MS = 1600;
+    const syncIndicatorState = {
+      activeCount: 0,
+      shownAt: 0,
+      hideTimeoutId: 0
+    };
+
+    function beginSyncIndicator() {
+      window.clearTimeout(syncIndicatorState.hideTimeoutId);
+      syncIndicatorState.hideTimeoutId = 0;
+      syncIndicatorState.activeCount += 1;
+
+      if (syncIndicatorState.activeCount > 1) {
+        return;
+      }
+
+      syncIndicatorState.shownAt = Date.now();
+      syncIndicator.classList.add("is-visible");
+      syncIndicator.setAttribute("aria-hidden", "false");
+    }
+
+    function endSyncIndicator() {
+      if (syncIndicatorState.activeCount > 0) {
+        syncIndicatorState.activeCount -= 1;
+      }
+
+      if (syncIndicatorState.activeCount > 0) {
+        return;
+      }
+
+      const elapsed = Date.now() - syncIndicatorState.shownAt;
+      const remaining = Math.max(0, SYNC_INDICATOR_MIN_MS - elapsed);
+
+      window.clearTimeout(syncIndicatorState.hideTimeoutId);
+      syncIndicatorState.hideTimeoutId = window.setTimeout(() => {
+        if (syncIndicatorState.activeCount > 0) {
+          return;
+        }
+
+        syncIndicator.classList.remove("is-visible");
+        syncIndicator.setAttribute("aria-hidden", "true");
+      }, remaining);
+    }
 
     function getStoredCloudProfile() {
       const raw = localStorage.getItem(CLOUD_PROFILE_KEY);
@@ -2706,6 +2834,7 @@
       }
 
       cloudSync.isSaving = true;
+      beginSyncIndicator();
 
       try {
         const updatedAt = new Date().toISOString();
@@ -2736,6 +2865,7 @@
         return true;
       } finally {
         cloudSync.isSaving = false;
+        endSyncIndicator();
       }
     }
 
@@ -2750,12 +2880,16 @@
       }
 
       if (!cloudSync.characterId) {
+        beginSyncIndicator();
+
         const { data: existing, error: findError } = await supabaseClient
           .from("characters")
           .select("id, updated_at, data")
           .eq("name", characterName)
           .limit(1)
           .maybeSingle();
+
+        endSyncIndicator();
 
         if (findError) {
           console.error("Cloud save lookup failed.", findError);
@@ -2806,11 +2940,13 @@
         return false;
       }
 
+      beginSyncIndicator();
       loadCharacterPayload(remotePayload);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(remotePayload));
       cloudSync.lastSyncedPayload = remotePayloadString;
       cloudSync.lastSyncedAt = remoteUpdatedAt;
       persistCloudProfile();
+      endSyncIndicator();
       return true;
     }
 
@@ -3101,11 +3237,29 @@
     function updateDerivedMaxHp() {
       const constitutionSelect = document.querySelector('[name="constitutionDie"]');
       const constitutionDie = constitutionSelect ? constitutionSelect.value : "d8";
+      const level = getCharacterLevel();
+      const constitutionPerLevel = Math.floor(getDieRank(constitutionDie) / 2);
+      const extraLevels = Math.max(0, level - 1);
+      const levelOneHp = 8 + constitutionPerLevel;
+      const extraLevelHp = constitutionPerLevel * extraLevels;
       const featBonusHp = getActiveFeatBonusTotal("maxHp");
-      const calculatedMaxHp = 10 + Math.floor(getDieRank(constitutionDie) / 2) + featBonusHp;
+      const calculatedMaxHp = levelOneHp + extraLevelHp + featBonusHp;
       const currentHp = Math.max(0, Number(currentHpInput.value) || 0);
+      const extraLevelsLabel = extraLevels > 0
+        ? `Levels 2-${level}: +${constitutionPerLevel} x ${extraLevels} = +${extraLevelHp}`
+        : `Levels 2+: +${constitutionPerLevel} x 0 = +0`;
+      const tooltipLines = [
+        "Max HP Breakdown",
+        `Base HP: 8`,
+        `Level 1 Constitution (${constitutionDie} / 2): +${constitutionPerLevel}`,
+        extraLevelsLabel,
+        `Feat bonuses: +${featBonusHp}`,
+        `Total: ${calculatedMaxHp}`
+      ];
 
       maxHpInput.value = String(calculatedMaxHp);
+      maxHpInput.title = tooltipLines.join("\n");
+      maxHpInput.setAttribute("aria-label", `Max HP ${calculatedMaxHp}. ${tooltipLines.slice(1).join(". ")}`);
 
       if (currentHp > calculatedMaxHp) {
         currentHpInput.value = String(calculatedMaxHp);

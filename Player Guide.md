@@ -44,7 +44,9 @@ Use this sheet to build and track a Breath of the World character. Cloud Save st
 
 - Open the Combat tab on the right side of the sheet.
 - Current HP can be edited.
-- Max HP is calculated from Constitution.
+- Max HP starts at `8 + half your Constitution die` at Level 1.
+- Each level after Level 1 adds another `half your Constitution die`.
+- Hover Max HP to see the full breakdown and total.
 - Combat skills spend Combat Points.
 - Level 1 starts with 0 Combat Points.
 - Each level after Level 1 gives 1 Combat Point.
