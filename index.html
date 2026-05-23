@@ -623,6 +623,52 @@
       font-weight: 400;
     }
 
+    .startup-character-panel {
+      width: min(480px, calc(100vw - 36px));
+    }
+
+    .startup-character-copy {
+      margin: -4px 0 0;
+      color: var(--muted);
+    }
+
+    .startup-character-divider {
+      position: relative;
+      text-align: center;
+      font-size: 0.84rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .startup-character-divider::before,
+    .startup-character-divider::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: calc(50% - 26px);
+      height: 2px;
+      background: rgba(77, 52, 31, 0.26);
+    }
+
+    .startup-character-divider::before {
+      left: 0;
+    }
+
+    .startup-character-divider::after {
+      right: 0;
+    }
+
+    .startup-character-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .startup-character-actions button {
+      width: 100%;
+      justify-content: center;
+    }
+
     .left-column {
       position: relative;
       z-index: 20;
@@ -1203,29 +1249,29 @@
       transition: grid-template-columns 300ms ease, gap 300ms ease, padding 260ms ease, transform 260ms ease;
     }
 
-    .skill-row.has-mantle-bonus,
-    .combat-skill-row.has-mantle-bonus {
+    .skill-row.has-sheet-bonus,
+    .combat-skill-row.has-sheet-bonus {
       background: rgba(83, 137, 96, 0.18);
       box-shadow: inset 4px 0 0 #538960;
       padding-left: 12px;
       padding-right: 10px;
     }
 
-    .skill-row.has-mantle-bonus {
+    .skill-row.has-sheet-bonus {
       grid-template-columns: minmax(0, 1fr) 56px 72px 52px;
     }
 
-    .combat-skill-row.has-mantle-bonus {
+    .combat-skill-row.has-sheet-bonus {
       grid-template-columns: minmax(0, 1fr) 124px 72px 52px;
     }
 
-    .skill-row.has-mantle-bonus input,
-    .combat-skill-row.has-mantle-bonus input {
+    .skill-row.has-sheet-bonus input,
+    .combat-skill-row.has-sheet-bonus input {
       border-color: #538960;
       background: rgba(237, 249, 239, 0.9);
     }
 
-    .mantle-bonus {
+    .sheet-bonus {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1534,15 +1580,15 @@
         max-width: none;
       }
 
-      .skill-row.has-mantle-bonus,
-      .combat-skill-row.has-mantle-bonus {
+      .skill-row.has-sheet-bonus,
+      .combat-skill-row.has-sheet-bonus {
         grid-template-columns: minmax(0, 1fr) auto;
       }
 
-      .skill-row.has-mantle-bonus .die-badge,
-      .skill-row.has-mantle-bonus input,
-      .combat-skill-row.has-mantle-bonus .combat-skill-stat,
-      .combat-skill-row.has-mantle-bonus input {
+      .skill-row.has-sheet-bonus .die-badge,
+      .skill-row.has-sheet-bonus input,
+      .combat-skill-row.has-sheet-bonus .combat-skill-stat,
+      .combat-skill-row.has-sheet-bonus input {
         grid-column: auto;
       }
 
@@ -1604,8 +1650,6 @@
               <div class="actions-menu" id="actions-menu" hidden>
                 <label class="button-like" for="character-image-input">Image<input id="character-image-input" type="file" accept="image/*"></label>
                 <button type="button" id="clear-character-image">Clear Image</button>
-                <label class="button-like" for="load-sheet">Load<input id="load-sheet" type="file" accept="application/json"></label>
-                <button type="button" id="save-sheet">Save</button>
                 <button type="button" id="load-cloud-character">Cloud Load</button>
                 <button type="button" id="save-cloud-character">Cloud Save</button>
                 <button type="button" id="print-sheet">Print</button>
@@ -1928,6 +1972,18 @@
       </div>
     </div>
 
+    <div class="image-cropper-modal" id="startup-character-modal" hidden>
+      <div class="image-cropper-panel startup-character-panel" role="dialog" aria-modal="true" aria-labelledby="startup-character-title">
+        <h2 id="startup-character-title">Choose A Character</h2>
+        <p class="startup-character-copy">Pick a cloud save to load, or start from a fresh sheet.</p>
+        <div class="cloud-load-list" id="startup-character-list"></div>
+        <div class="startup-character-divider">or</div>
+        <div class="startup-character-actions">
+          <button type="button" id="startup-create-character">Create New Character</button>
+        </div>
+      </div>
+    </div>
+
     <div class="combat-drawer" id="combat-drawer">
       <button type="button" class="combat-tab" id="combat-tab" aria-expanded="false" aria-controls="combat-panel">Combat</button>
       <section class="panel combat-panel" id="combat-panel">
@@ -2040,15 +2096,19 @@
     const CLOUD_SYNC_POLL_MS = 5000;
     const FEATS_FILE = "feats.json";
     const MANTLES_FILE = "mantles.json";
-    const CHARACTER_SAVE_FOLDER = "character-saves";
-    const DEFAULT_CHARACTER_SHEET_FILE = "character-sheet.json";
 
     const FALLBACK_FEATS = [
       {
         id: "field-hand",
         name: "Field-Hand",
         category: "Farmer / Hard Worker",
-        description: "Years of labor have hardened your body. Gain +2 maximum HP. When performing extended physical labor, you do not tire as quickly as others. Once per rest, reroll a failed Strength or Constitution check."
+        description: "Years of labor have hardened your body. Gain +2 maximum HP. When performing extended physical labor, you do not tire as quickly as others. Once per rest, reroll a failed Strength or Constitution check.",
+        bonuses: [
+          {
+            target: "maxHp",
+            amount: 2
+          }
+        ]
       },
       {
         id: "mule-born",
@@ -2221,7 +2281,6 @@
     const mantleHoverPreview = document.getElementById("mantle-hover-preview");
     const mantlePicker = document.getElementById("mantle-picker");
     const mantleDescriptionsNode = document.getElementById("mantle-description-list");
-    const loadInput = document.getElementById("load-sheet");
     const characterImageInput = document.getElementById("character-image-input");
     const characterWatermark = document.getElementById("character-watermark");
     const clearCharacterImageButton = document.getElementById("clear-character-image");
@@ -2258,6 +2317,9 @@
     const cloudLoadModal = document.getElementById("cloud-load-modal");
     const cloudLoadList = document.getElementById("cloud-load-list");
     const cloudLoadCancel = document.getElementById("cloud-load-cancel");
+    const startupCharacterModal = document.getElementById("startup-character-modal");
+    const startupCharacterList = document.getElementById("startup-character-list");
+    const startupCreateCharacterButton = document.getElementById("startup-create-character");
     const statRowOrder = new Map(statRows.map((row, index) => [row, index]));
     const DIE_RANK = {
       d4: 4,
@@ -2423,6 +2485,19 @@
       });
     }
 
+    function normalizeBonuses(payloadBonuses) {
+      if (!Array.isArray(payloadBonuses)) {
+        return [];
+      }
+
+      return payloadBonuses
+        .map((bonus) => ({
+          target: String(bonus.target || "").trim(),
+          amount: Math.max(0, Math.floor(Number(bonus.amount) || 0))
+        }))
+        .filter((bonus) => bonus.target && bonus.amount > 0);
+    }
+
     function normalizeFeats(payload) {
       const rawFeats = Array.isArray(payload) ? payload : payload.feats;
 
@@ -2435,7 +2510,8 @@
           id: String(feat.id || "").trim(),
           name: String(feat.name || "").trim(),
           category: String(feat.category || "General").trim(),
-          description: String(feat.description || "").trim()
+          description: String(feat.description || "").trim(),
+          bonuses: normalizeBonuses(feat.bonuses)
         }))
         .filter((feat) => feat.id && feat.name && feat.description);
     }
@@ -2453,14 +2529,7 @@
           name: String(mantle.name || "").trim(),
           category: String(mantle.category || "General").trim(),
           description: String(mantle.description || "").trim(),
-          bonuses: Array.isArray(mantle.bonuses)
-            ? mantle.bonuses
-              .map((bonus) => ({
-                target: String(bonus.target || "").trim(),
-                amount: Math.max(0, Math.floor(Number(bonus.amount) || 0))
-              }))
-              .filter((bonus) => bonus.target && bonus.amount > 0)
-            : []
+          bonuses: normalizeBonuses(mantle.bonuses)
         }))
         .filter((mantle) => mantle.id && mantle.name && mantle.description);
     }
@@ -2583,23 +2652,6 @@
         characterImageVisible: state.characterImageVisible,
         personas: state.personas
       };
-    }
-
-    function getCharacterSaveFileName() {
-      const characterName = document.getElementById("character-name").value.trim();
-      const safeName = characterName
-        .replace(/[<>:"/\\|?*]+/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "")
-        .toLowerCase();
-      const today = new Date().toISOString().slice(0, 10);
-
-      return `${safeName || DEFAULT_CHARACTER_SHEET_FILE.replace(/\.json$/i, "")}-${today}.json`;
-    }
-
-    function getCharacterSavePath() {
-      return `${CHARACTER_SAVE_FOLDER}/${getCharacterSaveFileName()}`;
     }
 
     function refreshSheetFromState() {
@@ -2799,10 +2851,8 @@
       cloudLoadList.innerHTML = "";
     }
 
-    async function openCloudLoadMenu() {
-      cloudLoadList.innerHTML = "<p class=\"persona-empty\">Loading cloud saves...</p>";
-      cloudLoadModal.hidden = false;
-
+    async function populateCloudSaveList(listNode, onSelect) {
+      listNode.innerHTML = "<p class=\"persona-empty\">Loading cloud saves...</p>";
       const { data, error } = await supabaseClient
         .from("characters")
         .select("id, name, updated_at")
@@ -2810,16 +2860,16 @@
 
       if (error) {
         console.error("Cloud load list failed.", error);
-        cloudLoadList.innerHTML = "<p class=\"persona-empty\">Could not load cloud saves.</p>";
+        listNode.innerHTML = "<p class=\"persona-empty\">Could not load cloud saves.</p>";
         return;
       }
 
       if (!Array.isArray(data) || data.length === 0) {
-        cloudLoadList.innerHTML = "<p class=\"persona-empty\">No cloud saves yet.</p>";
+        listNode.innerHTML = "<p class=\"persona-empty\">No cloud saves yet.</p>";
         return;
       }
 
-      cloudLoadList.innerHTML = "";
+      listNode.innerHTML = "";
       data.forEach((character) => {
         const option = document.createElement("button");
         option.type = "button";
@@ -2833,10 +2883,30 @@
 
         option.appendChild(updated);
         option.addEventListener("click", async () => {
-          closeCloudLoadMenu();
-          await loadCloudCharacterById(character.id);
+          await onSelect(character.id);
         });
-        cloudLoadList.appendChild(option);
+        listNode.appendChild(option);
+      });
+    }
+
+    async function openCloudLoadMenu() {
+      cloudLoadModal.hidden = false;
+      await populateCloudSaveList(cloudLoadList, async (characterId) => {
+        closeCloudLoadMenu();
+        await loadCloudCharacterById(characterId);
+      });
+    }
+
+    function closeStartupCharacterPrompt() {
+      startupCharacterModal.hidden = true;
+      startupCharacterList.innerHTML = "";
+    }
+
+    async function openStartupCharacterPrompt() {
+      startupCharacterModal.hidden = false;
+      await populateCloudSaveList(startupCharacterList, async (characterId) => {
+        closeStartupCharacterPrompt();
+        await loadCloudCharacterById(characterId);
       });
     }
 
@@ -2863,16 +2933,16 @@
       return true;
     }
 
-    function getMantleBonus(input) {
-      return Math.max(0, Math.floor(Number(input.dataset.mantleBonus) || 0));
+    function getInputBonus(input) {
+      return Math.max(0, Math.floor(Number(input.dataset.sheetBonus) || 0));
     }
 
     function getPointValue(input) {
-      return Math.max(0, Math.floor(Number(input.value) || 0) - getMantleBonus(input));
+      return Math.max(0, Math.floor(Number(input.value) || 0) - getInputBonus(input));
     }
 
     function normalizePointInput(input) {
-      const bonus = getMantleBonus(input);
+      const bonus = getInputBonus(input);
       input.min = "0";
       input.step = "1";
       input.value = String(getPointValue(input) + bonus);
@@ -2902,7 +2972,7 @@
 
         const currentValue = getPointValue(input);
         const reduction = Math.min(currentValue, overspent);
-        input.value = String(currentValue - reduction + getMantleBonus(input));
+        input.value = String(currentValue - reduction + getInputBonus(input));
         overspent -= reduction;
       });
 
@@ -2923,6 +2993,10 @@
       featTotalNode.textContent = String(totalFeats - state.activeFeatIds.length);
       skillPointTotalNode.textContent = String(totalSkillPoints - spentSkillPoints);
       combatPointTotalNode.textContent = String(totalCombatPoints - spentCombatPoints);
+
+      if (trimmedFeats) {
+        applySheetBonuses();
+      }
 
       if (trimmedFeats || changedInput === characterLevelInput) {
         buildFeatSelect();
@@ -3006,10 +3080,29 @@
         : "linear-gradient(90deg, #8c2f2a 0%, #c66b44 55%, #d7c5a4 100%)";
     }
 
+    function getActiveFeatBonusTotal(target) {
+      return state.activeFeatIds.reduce((total, featId) => {
+        const feat = feats.find((entry) => entry.id === featId);
+
+        if (!feat || !Array.isArray(feat.bonuses)) {
+          return total;
+        }
+
+        return total + feat.bonuses.reduce((featTotal, bonus) => {
+          if (bonus.target !== target) {
+            return featTotal;
+          }
+
+          return featTotal + Math.max(0, Math.floor(Number(bonus.amount) || 0));
+        }, 0);
+      }, 0);
+    }
+
     function updateDerivedMaxHp() {
       const constitutionSelect = document.querySelector('[name="constitutionDie"]');
       const constitutionDie = constitutionSelect ? constitutionSelect.value : "d8";
-      const calculatedMaxHp = 10 + Math.floor(getDieRank(constitutionDie) / 2);
+      const featBonusHp = getActiveFeatBonusTotal("maxHp");
+      const calculatedMaxHp = 10 + Math.floor(getDieRank(constitutionDie) / 2) + featBonusHp;
       const currentHp = Math.max(0, Number(currentHpInput.value) || 0);
 
       maxHpInput.value = String(calculatedMaxHp);
@@ -3030,34 +3123,78 @@
       });
     }
 
-    function clearMantleBonuses() {
+    function clearSheetBonuses() {
       [...skillPointInputs, ...combatSkillInputs].forEach((input) => {
         const row = input.closest(".skill-row, .combat-skill-row");
         const baseValue = getPointValue(input);
 
         input.value = String(baseValue);
-        delete input.dataset.mantleBonus;
+        delete input.dataset.sheetBonus;
         input.title = "";
 
         if (row) {
-          row.classList.remove("has-mantle-bonus");
-          row.querySelector(".mantle-bonus")?.remove();
+          row.classList.remove("has-sheet-bonus");
+          row.querySelector(".sheet-bonus")?.remove();
         }
       });
     }
 
-    function applyMantleBonuses() {
-      clearMantleBonuses();
-
+    function getSheetBonuses() {
+      const bonuses = [];
       const mantle = mantles.find((entry) => entry.id === state.activeMantleId);
 
-      if (!mantle || !Array.isArray(mantle.bonuses)) {
-        return;
+      if (mantle && Array.isArray(mantle.bonuses)) {
+        mantle.bonuses.forEach((bonus) => {
+          bonuses.push({
+            target: bonus.target,
+            amount: bonus.amount,
+            sourceName: mantle.name
+          });
+        });
       }
 
-      mantle.bonuses.forEach((bonus) => {
-        const input = document.querySelector(`[name="${bonus.target}"]`);
-        const amount = Math.max(0, Math.floor(Number(bonus.amount) || 0));
+      state.activeFeatIds.forEach((featId) => {
+        const feat = feats.find((entry) => entry.id === featId);
+
+        if (!feat || !Array.isArray(feat.bonuses)) {
+          return;
+        }
+
+        feat.bonuses.forEach((bonus) => {
+          bonuses.push({
+            target: bonus.target,
+            amount: bonus.amount,
+            sourceName: feat.name
+          });
+        });
+      });
+
+      return bonuses;
+    }
+
+    function applySheetBonuses() {
+      clearSheetBonuses();
+
+      const bonusesByTarget = new Map();
+
+      getSheetBonuses().forEach((bonus) => {
+        if (bonus.target === "maxHp") {
+          return;
+        }
+
+        const current = bonusesByTarget.get(bonus.target) || {
+          amount: 0,
+          sources: []
+        };
+
+        current.amount += Math.max(0, Math.floor(Number(bonus.amount) || 0));
+        current.sources.push(`${bonus.sourceName} +${bonus.amount}`);
+        bonusesByTarget.set(bonus.target, current);
+      });
+
+      bonusesByTarget.forEach((details, target) => {
+        const input = document.querySelector(`[name="${target}"]`);
+        const amount = details.amount;
 
         if (!input || amount <= 0) {
           return;
@@ -3065,18 +3202,19 @@
 
         const row = input.closest(".skill-row, .combat-skill-row");
         const baseValue = Math.max(0, Math.floor(Number(input.value) || 0));
+        const sourceSummary = details.sources.join(", ");
 
-        input.dataset.mantleBonus = String(amount);
+        input.dataset.sheetBonus = String(amount);
         input.value = String(baseValue + amount);
-        input.title = `Includes +${amount} from ${mantle.name}.`;
+        input.title = `Includes +${amount} from ${sourceSummary}.`;
 
         if (row) {
-          row.classList.add("has-mantle-bonus");
+          row.classList.add("has-sheet-bonus");
 
           const bonusBadge = document.createElement("span");
-          bonusBadge.className = "mantle-bonus";
+          bonusBadge.className = "sheet-bonus";
           bonusBadge.textContent = `+${amount}`;
-          bonusBadge.title = `${mantle.name} bonus`;
+          bonusBadge.title = sourceSummary;
           row.appendChild(bonusBadge);
         }
       });
@@ -3692,6 +3830,9 @@
       state.activeFeatIds.push(featId);
       animatePanelGrowth(featsPanel, () => {
         updateLevelProgression();
+        applySheetBonuses();
+        updateDerivedMaxHp();
+        updateHealthbar();
         buildFeatSelect();
         renderActiveFeats();
         renderFeatDescriptions();
@@ -3894,6 +4035,9 @@
       clearFeatUseChecks(featId);
       animatePanelGrowth(featsPanel, () => {
         updateLevelProgression();
+        applySheetBonuses();
+        updateDerivedMaxHp();
+        updateHealthbar();
         buildFeatSelect();
         renderActiveFeats();
         renderFeatDescriptions();
@@ -3966,7 +4110,7 @@
 
     function renderMantleDescription() {
       mantleDescriptionsNode.innerHTML = "";
-      applyMantleBonuses();
+      applySheetBonuses();
 
       const mantle = mantles.find((entry) => entry.id === state.activeMantleId);
 
@@ -4002,68 +4146,7 @@
       mantleDescriptionsNode.appendChild(description);
     }
 
-    async function loadState() {
-      const cloudProfile = getStoredCloudProfile();
-      const raw = localStorage.getItem(STORAGE_KEY);
-
-      if (cloudProfile) {
-        const loadedCloudState = await loadCloudCharacterById(cloudProfile.characterId, false);
-
-        if (loadedCloudState) {
-          return;
-        }
-
-        setCloudCharacterBinding();
-      }
-
-      if (!raw) {
-        refreshSheetFromState();
-        return;
-      }
-
-      try {
-        const payload = JSON.parse(raw);
-        loadCharacterPayload(payload);
-      } catch (error) {
-        console.error("Could not load sheet state.", error);
-        refreshSheetFromState();
-      }
-    }
-
-    function saveCharacterFile() {
-      const payload = getCharacterSheetPayload();
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.download = getCharacterSavePath();
-      link.click();
-      URL.revokeObjectURL(url);
-      saveState();
-      setStatus("Character saved.");
-    }
-
-    function loadCharacterFile(file) {
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        try {
-          const payload = JSON.parse(String(reader.result));
-          setCloudCharacterBinding();
-          loadCharacterPayload(payload);
-          saveState();
-          setStatus("Character loaded.");
-        } catch (error) {
-          console.error("Load failed.", error);
-          setStatus("Load failed.");
-        }
-      };
-
-      reader.readAsText(file);
-    }
-
-    function resetSheet() {
+    function applyFreshSheet(showMessage = true) {
       setCloudCharacterBinding();
       document.querySelectorAll("input[name], select[name]").forEach((element) => {
         if (element.matches(".stat-select")) {
@@ -4107,14 +4190,27 @@
       updateHealthbar();
       updateCombatSkillDice();
       saveState();
-      setStatus("Sheet reset.");
+
+      if (showMessage) {
+        setStatus("Sheet reset.");
+      }
     }
 
-    document.getElementById("save-sheet").addEventListener("click", saveCharacterFile);
+    function resetSheet() {
+      applyFreshSheet(true);
+    }
+
+    function createNewCharacter() {
+      closeStartupCharacterPrompt();
+      applyFreshSheet(false);
+      setStatus("New character ready.");
+    }
+
     document.getElementById("load-cloud-character").addEventListener("click", openCloudLoadMenu);
     document.getElementById("save-cloud-character").addEventListener("click", () => queueCloudSave(true, true));
     document.getElementById("print-sheet").addEventListener("click", () => window.print());
     document.getElementById("reset-sheet").addEventListener("click", resetSheet);
+    startupCreateCharacterButton.addEventListener("click", createNewCharacter);
     document.querySelectorAll("[data-add-persona]").forEach((button) => {
       button.addEventListener("click", () => addPersona(button.dataset.addPersona));
     });
@@ -4263,16 +4359,6 @@
       });
     });
 
-    loadInput.addEventListener("change", (event) => {
-      const file = event.target.files && event.target.files[0];
-
-      if (file) {
-        loadCharacterFile(file);
-      }
-
-      event.target.value = "";
-    });
-
     document.querySelectorAll("input[name], select[name], textarea[name]").forEach((element) => {
       element.addEventListener("input", () => {
         updateAllocationSummary();
@@ -4372,7 +4458,8 @@
       setActiveSheetTab(sheetTabs[0]);
       await loadFeats();
       await loadMantles();
-      await loadState();
+      applyFreshSheet(false);
+      await openStartupCharacterPrompt();
     }
 
     initializeSheet();

@@ -4,7 +4,13 @@
       "id": "mule-born",
       "name": "Mule-Born",
       "category": "Farmer / Hard Worker",
-      "description": "Years of labor have hardened your body. Gain +2 maximum HP. When performing extended physical labor, you do not tire as quickly as others. Once per rest, reroll a failed Strength or Constitution check."
+      "description": "Years of labor have hardened your body. Gain +2 maximum HP. When performing extended physical labor, you do not tire as quickly as others. Once per rest, reroll a failed Strength or Constitution check.",
+      "bonuses": [
+        {
+          "target": "maxHp",
+          "amount": 2
+        }
+      ]
     },
     {
       "id": "harvest-sense",
@@ -118,7 +124,13 @@
       "id": "ironbound",
       "name": "Ironbound",
       "category": "Blacksmith / Craftsman",
-      "description": "Your body has been hardened by labor, soot, and sparks. Gain +2 maximum HP. You recover from physical exhaustion more quickly than most, and mundane injuries heal cleaner under your care."
+      "description": "Your body has been hardened by labor, soot, and sparks. Gain +2 maximum HP. You recover from physical exhaustion more quickly than most, and mundane injuries heal cleaner under your care.",
+      "bonuses": [
+        {
+          "target": "maxHp",
+          "amount": 2
+        }
+      ]
     }
   ]
 }
