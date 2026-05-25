@@ -2177,7 +2177,7 @@
     const STORAGE_KEY = "breath-character-sheet-state";
     const CLOUD_PROFILE_KEY = "breath-character-sheet-cloud-profile";
     const CLOUD_SYNC_DEBOUNCE_MS = 900;
-    const CLOUD_SYNC_POLL_MS = 5000;
+    const CLOUD_SYNC_POLL_MS = 60000;
     const FEATS_FILE = "feats.json";
     const MANTLES_FILE = "mantles.json";
 
@@ -2884,7 +2884,7 @@
 
         const { data: existing, error: findError } = await supabaseClient
           .from("characters")
-          .select("id, updated_at, data")
+          .select("id, updated_at")
           .eq("name", characterName)
           .limit(1)
           .maybeSingle();
@@ -2900,7 +2900,7 @@
         activateCloudProfile(
           existing?.id || createCloudCharacterId(),
           existing?.updated_at || "",
-          existing?.data ? JSON.stringify(existing.data) : ""
+          ""
         );
       }
 
@@ -2908,7 +2908,29 @@
     }
 
     async function pullActiveCloudCharacter() {
-      if (!cloudSync.characterId || cloudSync.isSaving || cloudSync.debounceTimerId) {
+      if (
+        !cloudSync.characterId
+        || cloudSync.isSaving
+        || cloudSync.debounceTimerId
+        || document.hidden
+      ) {
+        return false;
+      }
+
+      const { data: remoteMeta, error: metaError } = await supabaseClient
+        .from("characters")
+        .select("updated_at")
+        .eq("id", cloudSync.characterId)
+        .maybeSingle();
+
+      if (metaError) {
+        console.error("Cloud sync metadata pull failed.", metaError);
+        return false;
+      }
+
+      const remoteUpdatedAt = typeof remoteMeta?.updated_at === "string" ? remoteMeta.updated_at : "";
+
+      if (!remoteUpdatedAt || remoteUpdatedAt === cloudSync.lastSyncedAt) {
         return false;
       }
 
@@ -2929,11 +2951,11 @@
 
       const remotePayload = data.data;
       const remotePayloadString = JSON.stringify(remotePayload);
-      const remoteUpdatedAt = typeof data.updated_at === "string" ? data.updated_at : "";
+      const remotePayloadUpdatedAt = typeof data.updated_at === "string" ? data.updated_at : remoteUpdatedAt;
 
       if (remotePayloadString === cloudSync.lastSyncedPayload) {
-        if (remoteUpdatedAt && remoteUpdatedAt !== cloudSync.lastSyncedAt) {
-          cloudSync.lastSyncedAt = remoteUpdatedAt;
+        if (remotePayloadUpdatedAt && remotePayloadUpdatedAt !== cloudSync.lastSyncedAt) {
+          cloudSync.lastSyncedAt = remotePayloadUpdatedAt;
           persistCloudProfile();
         }
 
@@ -2944,7 +2966,7 @@
       loadCharacterPayload(remotePayload);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(remotePayload));
       cloudSync.lastSyncedPayload = remotePayloadString;
-      cloudSync.lastSyncedAt = remoteUpdatedAt;
+      cloudSync.lastSyncedAt = remotePayloadUpdatedAt;
       persistCloudProfile();
       endSyncIndicator();
       return true;
