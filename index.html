@@ -433,8 +433,9 @@
     }
 
     .notes-inventory-layout {
+      grid-template-columns: minmax(0, 1fr);
       min-height: 560px;
-      align-items: stretch;
+      align-items: start;
     }
 
     .notes-inventory-layout .panel {
@@ -462,7 +463,7 @@
 
     .equipment-builder-fields {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(150px, 0.85fr) 86px auto;
+      grid-template-columns: minmax(0, 1fr) minmax(110px, 0.7fr) minmax(150px, 0.85fr) 86px auto;
       gap: 10px;
       align-items: end;
     }
@@ -479,7 +480,7 @@
 
     .equipment-item {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-columns: minmax(0, 1fr) minmax(82px, 0.55fr) minmax(120px, 0.75fr) 62px auto;
       gap: 10px;
       align-items: center;
       padding: 10px;
@@ -487,10 +488,23 @@
       background: rgba(252, 251, 248, 0.68);
     }
 
+    .equipment-list-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(82px, 0.55fr) minmax(120px, 0.75fr) 62px 32px;
+      gap: 10px;
+      align-items: center;
+      padding: 0 10px 4px;
+      border-bottom: 2px solid var(--line);
+      color: var(--muted);
+      font-size: 0.76rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
     .equipment-item strong,
     .equipment-name-display,
     .equipment-name-edit,
-    .equipment-item span {
+    .equipment-stat {
       min-width: 0;
       overflow-wrap: anywhere;
     }
@@ -524,10 +538,39 @@
       font-weight: 700;
     }
 
-    .equipment-item span {
+    .equipment-stat {
       color: var(--muted);
       font-size: 0.84rem;
       line-height: 1.3;
+    }
+
+    .equipment-stat strong {
+      display: none;
+    }
+
+    .equipment-stat-button {
+      width: auto;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.84rem;
+      letter-spacing: 0;
+      line-height: 1.3;
+      text-align: left;
+      text-transform: none;
+    }
+
+    .equipment-stat-button:hover,
+    .equipment-stat-button:focus-visible {
+      text-decoration: underline;
+    }
+
+    .equipment-stat-edit {
+      padding: 6px 8px;
+      font-size: 0.84rem;
     }
 
     .equipment-remove {
@@ -1766,8 +1809,17 @@
       }
 
       .equipment-builder-fields,
+      .equipment-list-header,
       .equipment-item {
         grid-template-columns: 1fr;
+      }
+
+      .equipment-list-header {
+        display: none;
+      }
+
+      .equipment-stat strong {
+        display: inline;
       }
 
       .equipment-remove {
@@ -2164,6 +2216,10 @@
           <div class="healthbar-fill" id="healthbar-fill"></div>
         </div>
         <p class="healthbar-text" id="healthbar-text">14 / 14 HP</p>
+        <div class="combat-weapons">
+          <h2>Weapons</h2>
+          <div class="equipment-list" id="combat-equipment-list"></div>
+        </div>
         <div class="combat-skills">
           <h2>Combat Skills</h2>
           <p class="help">Combat skills represent your training with different fighting styles. When you attack, roll the linked attribute die with the combat skill's modifier against the enemy's roll. If your attack succeeds, the enemy takes damage equal to the difference between the two rolls.</p>
@@ -2218,11 +2274,6 @@
 
     <div class="sheet-tab-panel" id="notes-inventory-panel" role="tabpanel" aria-labelledby="notes-inventory-tab" hidden>
     <div class="lower-layout notes-inventory-layout">
-      <section class="panel">
-        <h2>Notes</h2>
-        <textarea name="notes" placeholder="Character notes, story details, reminders"></textarea>
-      </section>
-
       <section class="panel inventory-panel">
         <h2>Inventory</h2>
         <div class="equipment-builder">
@@ -2231,6 +2282,10 @@
             <div>
               <label for="equipment-name">Equipment</label>
               <input id="equipment-name" type="text" placeholder="Iron longsword">
+            </div>
+            <div>
+              <label for="equipment-range">Range</label>
+              <input id="equipment-range" type="text" placeholder="Melee">
             </div>
             <div>
               <label for="equipment-target">Modifier</label>
@@ -2245,6 +2300,11 @@
           <div class="equipment-list" id="equipment-list"></div>
         </div>
         <textarea name="inventory" placeholder="Gear, coin, keepsakes, supplies"></textarea>
+      </section>
+
+      <section class="panel">
+        <h2>Notes</h2>
+        <textarea name="notes" placeholder="Character notes, story details, reminders"></textarea>
       </section>
     </div>
     </div>
@@ -2578,10 +2638,12 @@
     const combatTab = document.getElementById("combat-tab");
     const combatTooltip = document.getElementById("combat-tooltip");
     const equipmentNameInput = document.getElementById("equipment-name");
+    const equipmentRangeInput = document.getElementById("equipment-range");
     const equipmentTargetSelect = document.getElementById("equipment-target");
     const equipmentModifierInput = document.getElementById("equipment-modifier");
     const addEquipmentButton = document.getElementById("add-equipment");
     const equipmentList = document.getElementById("equipment-list");
+    const combatEquipmentList = document.getElementById("combat-equipment-list");
     let activeCombatTooltipRow = null;
     const personaLists = {
       party: document.getElementById("party-persona-list"),
@@ -2863,6 +2925,23 @@
       };
     }
 
+    function createDefaultEquipment() {
+      return [{
+        id: "default-fists",
+        name: "Fists",
+        range: "Touch",
+        target: "brawlingModifier",
+        amount: 0
+      }];
+    }
+
+    function withDefaultEquipment(equipment) {
+      const list = Array.isArray(equipment) ? equipment : [];
+      const hasFists = list.some((entry) => entry.id === "default-fists" || entry.name.toLowerCase() === "fists");
+
+      return hasFists ? list : [...createDefaultEquipment(), ...list];
+    }
+
     function normalizePersonas(payloadPersonas) {
       const source = payloadPersonas && typeof payloadPersonas === "object" ? payloadPersonas : {};
 
@@ -2877,14 +2956,17 @@
         return [];
       }
 
-      return payloadEquipment
+      const equipment = payloadEquipment
         .map((equipment, index) => ({
           id: String(equipment.id || `equipment-${index}-${Math.random().toString(36).slice(2, 8)}`),
           name: String(equipment.name || "").trim(),
+          range: String(equipment.range || "").trim(),
           target: String(equipment.target || "").trim(),
           amount: Math.max(0, Math.floor(Number(equipment.amount) || 0))
         }))
         .filter((equipment) => equipment.name && equipment.target);
+
+      return withDefaultEquipment(equipment);
     }
 
     function normalizePersonaList(personas) {
@@ -3012,7 +3094,9 @@
       state.activeMantleId = typeof payload.activeMantleId === "string" ? payload.activeMantleId : "";
       state.characterImage = typeof payload.characterImage === "string" ? payload.characterImage : "";
       state.characterImageVisible = typeof payload.characterImageVisible === "boolean" ? payload.characterImageVisible : true;
-      state.equipment = normalizeEquipment(payload.equipment);
+      state.equipment = Object.prototype.hasOwnProperty.call(payload, "equipment")
+        ? normalizeEquipment(payload.equipment)
+        : createDefaultEquipment();
       state.personas = normalizePersonas(payload.personas);
       refreshSheetFromState();
     }
@@ -3532,21 +3616,60 @@
       }
     }
 
-    function renderEquipment() {
-      if (!equipmentList) {
+    function renderEquipmentHeader(list) {
+      const header = document.createElement("div");
+      header.className = "equipment-list-header";
+      ["Weapon", "Range", "Modifier", "Bonus", ""].forEach((label) => {
+        const cell = document.createElement("div");
+        cell.textContent = label;
+        header.appendChild(cell);
+      });
+      list.appendChild(header);
+    }
+
+    function createEquipmentStat(label, value) {
+      const stat = document.createElement("span");
+      stat.className = "equipment-stat";
+
+      const heading = document.createElement("strong");
+      heading.textContent = `${label}: `;
+      stat.appendChild(heading);
+      stat.append(document.createTextNode(value));
+
+      return stat;
+    }
+
+    function createEditableEquipmentStat(equipment, field, label, value) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "equipment-stat equipment-stat-button";
+      button.setAttribute("aria-label", `Edit ${label.toLowerCase()} for ${equipment.name}`);
+
+      const heading = document.createElement("strong");
+      heading.textContent = `${label}: `;
+      button.appendChild(heading);
+      button.append(document.createTextNode(value));
+      button.addEventListener("click", () => editEquipmentField(equipment.id, field));
+
+      return button;
+    }
+
+    function renderEquipmentList(list, { editable = false } = {}) {
+      if (!list) {
         return;
       }
 
-      buildEquipmentTargetOptions();
-      equipmentList.innerHTML = "";
+      list.innerHTML = "";
 
       if (state.equipment.length === 0) {
         const empty = document.createElement("p");
         empty.className = "persona-empty";
-        empty.textContent = "No equipment bonuses yet.";
-        equipmentList.appendChild(empty);
+        empty.textContent = "No weapons yet.";
+        list.appendChild(empty);
         return;
       }
+
+      renderEquipmentHeader(list);
 
       state.equipment.forEach((equipment) => {
         const item = document.createElement("article");
@@ -3555,38 +3678,62 @@
 
         const details = document.createElement("div");
         details.className = "equipment-details";
-        const name = document.createElement("button");
-        name.type = "button";
-        name.className = "equipment-name-display";
+
+        const name = editable
+          ? document.createElement("button")
+          : document.createElement("strong");
+
+        if (editable) {
+          name.type = "button";
+          name.className = "equipment-name-display";
+          name.setAttribute("aria-label", `Edit ${equipment.name}`);
+          name.addEventListener("click", () => editEquipmentName(equipment.id));
+        }
+
         name.textContent = equipment.name;
-        name.setAttribute("aria-label", `Edit ${equipment.name}`);
-        name.addEventListener("click", () => editEquipmentName(equipment.id));
-        const bonus = document.createElement("span");
-        bonus.textContent = `+${equipment.amount} ${getModifierLabel(equipment.target)}`;
         details.appendChild(name);
-        details.appendChild(document.createElement("br"));
-        details.appendChild(bonus);
+
+        const range = editable
+          ? createEditableEquipmentStat(equipment, "range", "Range", equipment.range || "Not set")
+          : createEquipmentStat("Range", equipment.range || "Not set");
+        const modifier = editable
+          ? createEditableEquipmentStat(equipment, "target", "Modifier", getModifierLabel(equipment.target))
+          : createEquipmentStat("Modifier", getModifierLabel(equipment.target));
 
         const badge = document.createElement("span");
         badge.className = "sheet-bonus";
         badge.textContent = `+${equipment.amount}`;
 
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.className = "equipment-remove";
-        remove.textContent = "x";
-        remove.setAttribute("aria-label", `Remove ${equipment.name}`);
-        remove.addEventListener("click", () => removeEquipment(equipment.id));
+        const action = document.createElement(editable ? "button" : "span");
+
+        if (editable) {
+          action.type = "button";
+          action.className = "equipment-remove";
+          action.textContent = "x";
+          action.setAttribute("aria-label", `Remove ${equipment.name}`);
+          action.addEventListener("click", () => removeEquipment(equipment.id));
+        } else {
+          action.setAttribute("aria-hidden", "true");
+        }
 
         item.appendChild(details);
+        item.appendChild(range);
+        item.appendChild(modifier);
         item.appendChild(badge);
-        item.appendChild(remove);
-        equipmentList.appendChild(item);
+        item.appendChild(action);
+        list.appendChild(item);
       });
+    }
+
+    function renderEquipment() {
+      buildEquipmentTargetOptions();
+      renderEquipmentList(equipmentList, { editable: true });
+      renderEquipmentList(combatEquipmentList);
     }
 
     function addEquipment() {
       const name = equipmentNameInput.value.trim();
+      const range = equipmentRangeInput.value.trim();
       const target = equipmentTargetSelect.value;
       const amount = Math.max(0, Math.floor(Number(equipmentModifierInput.value) || 0));
 
@@ -3598,10 +3745,12 @@
       state.equipment.push({
         id: `equipment-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         name,
+        range,
         target,
         amount
       });
       equipmentNameInput.value = "";
+      equipmentRangeInput.value = "";
       equipmentModifierInput.value = "0";
       renderEquipment();
       applySheetBonuses();
@@ -3673,6 +3822,87 @@
       details.querySelector(".equipment-name-display")?.replaceWith(nameInput);
       nameInput.focus();
       nameInput.select();
+    }
+
+    function editEquipmentField(equipmentId, field) {
+      const equipment = state.equipment.find((entry) => entry.id === equipmentId);
+
+      if (!equipment || !["range", "target"].includes(field)) {
+        return;
+      }
+
+      renderEquipment();
+
+      const item = equipmentList.querySelector(`[data-equipment-id="${equipmentId}"]`);
+      const targetNode = field === "range"
+        ? item?.children[1]
+        : item?.children[2];
+
+      if (!targetNode) {
+        return;
+      }
+
+      let finished = false;
+      const finishEditing = (updates = null) => {
+        if (finished) {
+          return;
+        }
+
+        finished = true;
+
+        if (updates) {
+          updateEquipment(equipmentId, updates);
+        }
+
+        renderEquipment();
+        applySheetBonuses();
+        updateLevelProgression();
+      };
+
+      if (field === "range") {
+        const rangeInput = document.createElement("input");
+        rangeInput.className = "equipment-stat-edit";
+        rangeInput.type = "text";
+        rangeInput.value = equipment.range;
+        rangeInput.setAttribute("aria-label", "Equipment range");
+        rangeInput.addEventListener("blur", () => finishEditing({ range: rangeInput.value.trim() }));
+        rangeInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            rangeInput.blur();
+          }
+
+          if (event.key === "Escape") {
+            event.preventDefault();
+            finishEditing();
+          }
+        });
+        targetNode.replaceWith(rangeInput);
+        rangeInput.focus();
+        rangeInput.select();
+        return;
+      }
+
+      const modifierSelect = document.createElement("select");
+      modifierSelect.className = "equipment-stat-edit";
+      modifierSelect.setAttribute("aria-label", "Equipment modifier");
+      combatSkillInputs.forEach((input) => {
+        const option = document.createElement("option");
+        option.value = input.name;
+        option.textContent = getModifierLabel(input.name);
+        modifierSelect.appendChild(option);
+      });
+      modifierSelect.value = equipment.target;
+      modifierSelect.addEventListener("change", () => finishEditing({ target: modifierSelect.value }));
+      modifierSelect.addEventListener("blur", () => finishEditing({ target: modifierSelect.value }));
+      modifierSelect.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          finishEditing();
+        }
+      });
+      targetNode.replaceWith(modifierSelect);
+      modifierSelect.focus();
     }
 
 
@@ -4927,7 +5157,7 @@
       state.activeMantleId = "";
       state.characterImage = "";
       state.characterImageVisible = true;
-      state.equipment = [];
+      state.equipment = createDefaultEquipment();
       state.personas = normalizePersonas();
       characterImageInput.value = "";
       buildFeatSelect();
@@ -5041,6 +5271,12 @@
     }, { passive: true });
     addEquipmentButton?.addEventListener("click", addEquipment);
     equipmentNameInput?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addEquipment();
+      }
+    });
+    equipmentRangeInput?.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
         addEquipment();
