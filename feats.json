@@ -3,134 +3,175 @@
     {
       "id": "mule-born",
       "name": "Mule-Born",
-      "category": "Farmer / Hard Worker",
+      "category": "Prologue",
       "description": "Years of labor have hardened your body. Gain +2 maximum HP. When performing extended physical labor, you do not tire as quickly as others. Once per rest, reroll a failed Strength or Constitution check.",
       "bonuses": [
         {
           "target": "maxHp",
           "amount": 2
         }
-      ]
+      ],
+      "subcategory": "Farmer / Hard Worker"
     },
     {
       "id": "harvest-sense",
       "name": "Harvest Sense",
-      "category": "Farmer / Hard Worker",
-      "description": "You instinctively understand weather, crops, and the land. Gain Advantage on checks involving farming, weather, or identifying unhealthy land. You can usually tell when something in nature feels wrong."
+      "category": "Prologue",
+      "description": "You instinctively understand weather, crops, and the land. Gain Advantage on checks involving farming, weather, or identifying unhealthy land. You can usually tell when something in nature feels wrong.",
+      "subcategory": "Farmer / Hard Worker"
     },
     {
       "id": "stubborn-stock",
       "name": "Stubborn Stock",
-      "category": "Farmer / Hard Worker",
-      "description": "You refuse to stay down. The first time you would become exhausted each day, ignore it. Once per combat, reduce incoming damage by 1."
+      "category": "Prologue",
+      "description": "You refuse to stay down. The first time you would become exhausted each day, ignore it. Once per combat, reduce incoming damage by 1.",
+      "subcategory": "Farmer / Hard Worker"
     },
     {
       "id": "quick-wit",
       "name": "Quick Wit",
-      "category": "Jokester / Social",
-      "description": "You always have something to say. Once per encounter, reroll a failed Charisma check. After a few minutes of conversation, most people remember you fondly."
+      "category": "Prologue",
+      "description": "You always have something to say. Once per encounter, reroll a failed Charisma check. After a few minutes of conversation, most people remember you fondly.",
+      "subcategory": "Jokester / Social"
     },
     {
       "id": "fools-courage",
       "name": "Fool's Courage",
-      "category": "Jokester / Social",
-      "description": "You laugh in situations that should terrify you. Gain Advantage against fear effects."
+      "category": "Prologue",
+      "description": "You laugh in situations that should terrify you. Gain Advantage against fear effects.",
+      "subcategory": "Jokester / Social"
     },
     {
       "id": "tavern-soul",
       "name": "Tavern Soul",
-      "category": "Jokester / Social",
-      "description": "You know how to make strangers feel like friends. During rests, allies recover additional morale or stress. You can usually find rumors, gossip, or local trouble in any settlement."
+      "category": "Prologue",
+      "description": "You know how to make strangers feel like friends. During rests, allies recover additional morale or stress. You can usually find rumors, gossip, or local trouble in any settlement.",
+      "subcategory": "Jokester / Social"
     },
     {
       "id": "mocking-tongue",
       "name": "Mocking Tongue",
-      "category": "Jokester / Social",
-      "description": "Your words cut deeper than blades sometimes. Once per combat, distract an enemy with a taunt. If successful, they suffer disadvantage on their next action."
+      "category": "Prologue",
+      "description": "Your words cut deeper than blades sometimes. Once per combat, distract an enemy with a taunt. If successful, they suffer disadvantage on their next action.",
+      "subcategory": "Jokester / Social"
     },
     {
       "id": "waysinger",
       "name": "Waysinger",
-      "category": "Artist / Musician / Storyteller",
-      "description": "You carry songs, stories, and legends between settlements. People are naturally more willing to shelter or feed you. Once per session, recall a useful legend or historical detail."
+      "category": "Prologue",
+      "description": "You carry songs, stories, and legends between settlements. People are naturally more willing to shelter or feed you. Once per session, recall a useful legend or historical detail.",
+      "subcategory": "Artist / Musician / Storyteller"
     },
     {
       "id": "painter-of-moments",
       "name": "Painter of Moments",
-      "category": "Artist / Musician / Storyteller",
-      "description": "You notice beauty others overlook. Gain Advantage when observing details, emotions, or subtle changes. After studying a place or person, you may ask the GM one question about them."
+      "category": "Prologue",
+      "description": "You notice beauty others overlook. Gain Advantage when observing details, emotions, or subtle changes. After studying a place or person, you may ask the GM one question about them.",
+      "subcategory": "Artist / Musician / Storyteller"
     },
     {
       "id": "dancing-footwork",
       "name": "Dancing Footwork",
-      "category": "Artist / Musician / Storyteller",
-      "description": "Years of performance taught you balance and movement. Gain Advantage on checks involving balance or graceful movement. Once per combat, reposition a short distance without provoking reactions."
+      "category": "Prologue",
+      "description": "Years of performance taught you balance and movement. Gain Advantage on checks involving balance or graceful movement. Once per combat, reposition a short distance without provoking reactions.",
+      "subcategory": "Artist / Musician / Storyteller"
     },
     {
       "id": "silver-string",
       "name": "Silver String",
-      "category": "Artist / Musician / Storyteller",
-      "description": "Your music carries emotion unnaturally well. Once per scene, calm a frightened or angered individual through performance. Some claim your songs linger longer than they should."
+      "category": "Prologue",
+      "description": "Your music carries emotion unnaturally well. Once per scene, calm a frightened or angered individual through performance. Some claim your songs linger longer than they should.",
+      "subcategory": "Artist / Musician / Storyteller"
     },
     {
       "id": "village-healer",
       "name": "Village Healer",
-      "category": "Healer",
-      "description": "You know old remedies, stitching, and herbal care. During rests, allies recover additional HP. You may stabilize dying characters without a roll. Gain Advantage when treating sickness or wounds."
+      "category": "Prologue",
+      "description": "You know old remedies, stitching, and herbal care. During rests, allies recover additional HP. You may stabilize dying characters without a roll. Gain Advantage when treating sickness or wounds.",
+      "subcategory": "Healer"
     },
     {
       "id": "gentle-hands",
       "name": "Gentle Hands",
-      "category": "Healer",
-      "description": "People instinctively trust your care. Calm frightened individuals more easily. Once per session, remove panic or emotional distress from an ally through conversation or care."
+      "category": "Prologue",
+      "description": "People instinctively trust your care. Calm frightened individuals more easily. Once per session, remove panic or emotional distress from an ally through conversation or care.",
+      "subcategory": "Healer"
     },
     {
       "id": "bone-setter",
       "name": "Bone-Setter",
-      "category": "Healer",
-      "description": "You've treated hard injuries before. Broken limbs and major injuries heal faster under your care. Once per combat, reduce the severity of an ally's wound."
+      "category": "Prologue",
+      "description": "You've treated hard injuries before. Broken limbs and major injuries heal faster under your care. Once per combat, reduce the severity of an ally's wound.",
+      "subcategory": "Healer"
     },
     {
       "id": "herbwise",
       "name": "Herbwise",
-      "category": "Healer",
-      "description": "You know the language of roots, leaves, and old brews. You can identify useful or dangerous plants. During travel, you may gather herbs to create simple remedies."
+      "category": "Prologue",
+      "description": "You know the language of roots, leaves, and old brews. You can identify useful or dangerous plants. During travel, you may gather herbs to create simple remedies.",
+      "subcategory": "Healer"
     },
     {
       "id": "trailborn",
       "name": "Trailborn",
-      "category": "Hunter / Wilderness",
-      "description": "You were shaped by long roads, cold mornings, and silent forests. Gain Advantage on tracking, navigation, and identifying signs of creatures or danger. During travel, your group moves more quietly and is less likely to become lost. Once per rest, reroll a failed Survival or Awareness check."
+      "category": "Prologue",
+      "description": "You were shaped by long roads, cold mornings, and silent forests. Gain Advantage on tracking, navigation, and identifying signs of creatures or danger. During travel, your group moves more quickly and is less likely to become lost. Once per rest, reroll a failed Survival check.",
+      "subcategory": "Hunter / Wilderness"
+    },
+    {
+      "id": "quiet-step",
+      "name": "Quiet Step",
+      "category": "Prologue",
+      "description": "You know how to move through brush, mud, and dry leaves without giving yourself away. Gain Advantage on stealth checks in natural terrain. During travel, you may help the group avoid leaving obvious tracks.",
+      "subcategory": "Hunter / Wilderness"
+    },
+    {
+      "id": "beast-reader",
+      "name": "Beast Reader",
+      "category": "Prologue",
+      "description": "You understand animal behavior through posture, scent, calls, and movement. Gain Advantage when calming, tracking, avoiding, or predicting beasts. Once per rest, identify whether a nearby creature is afraid, hunting, wounded, or territorial.",
+      "subcategory": "Hunter / Wilderness"
+    },
+    {
+      "id": "weatherwise",
+      "name": "Weatherwise",
+      "category": "Prologue",
+      "description": "You read the sky, wind, pressure, insects, and birds better than most. Gain Advantage when predicting weather or preparing for harsh conditions. Once per session, ask the DM what natural danger is likely before it arrives.",
+      "subcategory": "Hunter / Wilderness"
     },
     {
       "id": "forgehand",
       "name": "Forgehand",
-      "category": "Blacksmith / Craftsman",
-      "description": "Years at the anvil have strengthened your arms and sharpened your patience. Gain Advantage on checks involving metalwork, repairing equipment, or identifying weapon and armor quality. During rests, you may repair damaged mundane gear."
+      "category": "Prologue",
+      "description": "Years at the anvil have strengthened your arms and sharpened your patience. Gain Advantage on checks involving metalwork, repairing equipment, or identifying weapon and armor quality. During rests, you may repair damaged mundane gear.",
+      "subcategory": "Blacksmith / Craftsman"
     },
     {
       "id": "embersoul",
       "name": "Embersoul",
-      "category": "Blacksmith / Craftsman",
-      "description": "You are deeply familiar with heat, flame, and endurance. Gain resistance against extreme heat and smoke. Once per rest, temporarily reinforce a weapon or tool, granting it improved effectiveness for a single encounter."
+      "category": "Prologue",
+      "description": "You are deeply familiar with heat, flame, and endurance. Gain resistance against extreme heat and smoke. Once per rest, temporarily reinforce a weapon or tool, granting it improved effectiveness for a single encounter.",
+      "subcategory": "Blacksmith / Craftsman"
     },
     {
       "id": "ringing-anvil",
       "name": "Ringing Anvil",
-      "category": "Blacksmith / Craftsman",
-      "description": "The rhythm of hammer and steel taught you discipline and precision. Gain Advantage on concentration, crafting, or timing-based checks. Once per combat, steady yourself and ignore distraction or interruption during your action."
+      "category": "Prologue",
+      "description": "The rhythm of hammer and steel taught you discipline and precision. Gain Advantage on concentration, crafting, or timing-based checks. Once per combat, steady yourself and ignore distraction or interruption during your action.",
+      "subcategory": "Blacksmith / Craftsman"
     },
     {
       "id": "ironbound",
       "name": "Ironbound",
-      "category": "Blacksmith / Craftsman",
+      "category": "Prologue",
       "description": "Your body has been hardened by labor, soot, and sparks. Gain +2 maximum HP. You recover from physical exhaustion more quickly than most, and mundane injuries heal cleaner under your care.",
       "bonuses": [
         {
           "target": "maxHp",
           "amount": 2
         }
-      ]
+      ],
+      "subcategory": "Blacksmith / Craftsman"
     }
   ]
 }

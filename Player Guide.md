@@ -23,6 +23,7 @@ Use this sheet to build and track a Breath of the World character. Cloud Save st
 - After Level 1, you gain 1 feat every other level.
 - The Feats Left counter decreases when you add a feat.
 - When you have no feat picks left, the feat picker locks until your level grants another pick or you remove a feat.
+- Feats are grouped by `category`, then `subcategory`, in `feats.json`.
 
 ## 4. Mantle
 
@@ -36,7 +37,7 @@ Use this sheet to build and track a Breath of the World character. Cloud Save st
 
 - Spend Skill Points in the 5e Skills box.
 - Level 1 gives 4 Skill Points.
-- Each level after Level 1 gives 3 more Skill Points.
+- Each level after Level 1 gives 2 more Skill Points.
 - Increasing a skill spends from Skill Points Left.
 - If you try to spend too many, the sheet reduces the changed value back within your available pool.
 

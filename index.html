@@ -849,7 +849,7 @@
       width: 100%;
       height: 100%;
       min-height: 0;
-      overflow: hidden;
+      overflow: auto;
       background: var(--paper);
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
     }
@@ -886,7 +886,7 @@
       display: grid;
       gap: 8px;
       min-height: 0;
-      overflow: auto;
+      overflow: visible;
       padding-right: 4px;
     }
 
@@ -915,6 +915,31 @@
 
     .combat-skill-row strong {
       font-size: 0.95rem;
+    }
+
+    .combat-tooltip {
+      position: fixed;
+      z-index: 4000;
+      width: min(300px, calc(100vw - 24px));
+      max-height: min(320px, calc(100vh - 24px));
+      overflow: auto;
+      padding: 10px 12px;
+      border: 2px solid var(--line);
+      background: #fffaf0;
+      color: var(--ink);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+      font-size: 0.84rem;
+      line-height: 1.35;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(8px);
+      transition: opacity 160ms ease, transform 160ms ease;
+      white-space: pre-line;
+    }
+
+    .combat-tooltip.is-visible {
+      opacity: 1;
+      transform: translateX(0);
     }
 
     .combat-skill-stat {
@@ -1143,6 +1168,30 @@
 
     .feat-picker.is-open {
       z-index: 4000;
+    }
+
+    .feat-category-heading,
+    .feat-subcategory-heading {
+      line-height: 1.2;
+      pointer-events: none;
+    }
+
+    .feat-category-heading {
+      padding: 8px 6px 2px;
+      color: var(--ink);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .feat-subcategory-heading {
+      padding: 5px 6px 0;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .feat-option {
@@ -1763,7 +1812,7 @@
         </div>
         <ul class="level-rules">
           <li><strong>Level 1:</strong> 1 feat, 4 skill points, max upgraded attributes of 2d10, 1d8, and 2d6; all remaining attributes stay d4.</li>
-          <li><strong>Levels 2+:</strong> 3 skill points and 1 combat skill point per level.</li>
+          <li><strong>Levels 2+:</strong> 2 skill points and 1 combat skill point per level.</li>
           <li><strong>Feat progression:</strong> gain 1 feat every other level after Level 1.</li>
         </ul>
       </section>
@@ -2093,7 +2142,7 @@
           <div>Stat</div>
           <div>Modifier</div>
         </div>
-        <div class="combat-skill-row" data-stat-name="strengthDie">
+        <div class="combat-skill-row" data-stat-name="strengthDie" data-tooltip="Measured martial weapon mastery. Strong, disciplined, refined combat.&#10;&#10;Includes: Longswords, Greatswords, Katanas, Battle-ready swords, Some polearms.&#10;&#10;This is the warrior category.">
           <strong>Bladecraft</strong>
           <div class="combat-skill-stat">
             <div class="die-badge combat-skill-stat-code">STR</div>
@@ -2101,23 +2150,7 @@
           </div>
           <input class="combat-skill-modifier" name="bladecraftModifier" type="number" value="0" step="1" aria-label="Bladecraft modifier">
         </div>
-        <div class="combat-skill-row" data-stat-name="strengthDie">
-          <strong>Longarms</strong>
-          <div class="combat-skill-stat">
-            <div class="die-badge combat-skill-stat-code">STR</div>
-            <div class="die-badge combat-skill-die">d10</div>
-          </div>
-          <input class="combat-skill-modifier" name="longarmsModifier" type="number" value="0" step="1" aria-label="Longarms modifier">
-        </div>
-        <div class="combat-skill-row" data-stat-name="strengthDie">
-          <strong>Heavy Weapons</strong>
-          <div class="combat-skill-stat">
-            <div class="die-badge combat-skill-stat-code">STR</div>
-            <div class="die-badge combat-skill-die">d10</div>
-          </div>
-          <input class="combat-skill-modifier" name="heavyWeaponsModifier" type="number" value="0" step="1" aria-label="Heavy Weapons modifier">
-        </div>
-        <div class="combat-skill-row" data-stat-name="dexterityDie">
+        <div class="combat-skill-row" data-stat-name="dexterityDie" data-tooltip="Speed, finesse, agility, precision, and technical skill.&#10;&#10;Includes: Rapiers, Daggers, Twin blades, Sabers, Whips, Fencing weapons, Fast spears.&#10;&#10;This is the graceful killer category.">
           <strong>Duelist Arts</strong>
           <div class="combat-skill-stat">
             <div class="die-badge combat-skill-stat-code">DEX</div>
@@ -2125,23 +2158,7 @@
           </div>
           <input class="combat-skill-modifier" name="duelistArtsModifier" type="number" value="0" step="1" aria-label="Duelist Arts modifier">
         </div>
-        <div class="combat-skill-row" data-stat-name="dexterityDie">
-          <strong>Marksman</strong>
-          <div class="combat-skill-stat">
-            <div class="die-badge combat-skill-stat-code">DEX</div>
-            <div class="die-badge combat-skill-die">d12</div>
-          </div>
-          <input class="combat-skill-modifier" name="marksmanModifier" type="number" value="0" step="1" aria-label="Marksman modifier">
-        </div>
-        <div class="combat-skill-row" data-stat-name="dexterityDie">
-          <strong>Skirmishing</strong>
-          <div class="combat-skill-stat">
-            <div class="die-badge combat-skill-stat-code">DEX</div>
-            <div class="die-badge combat-skill-die">d12</div>
-          </div>
-          <input class="combat-skill-modifier" name="skirmishingModifier" type="number" value="0" step="1" aria-label="Skirmishing modifier">
-        </div>
-        <div class="combat-skill-row" data-stat-name="constitutionDie">
+        <div class="combat-skill-row" data-stat-name="constitutionDie" data-tooltip="Heavy battlefield dominance and defensive warfare.&#10;&#10;Includes: Axes, Hammers, Shields, Halberds, Spears, Heavy weapons.">
           <strong>Vanguard</strong>
           <div class="combat-skill-stat">
             <div class="die-badge combat-skill-stat-code">CON</div>
@@ -2149,17 +2166,26 @@
           </div>
           <input class="combat-skill-modifier" name="vanguardModifier" type="number" value="0" step="1" aria-label="Vanguard modifier">
         </div>
-        <div class="combat-skill-row" data-stat-name="constitutionDie">
-          <strong>Shieldcraft</strong>
+        <div class="combat-skill-row" data-stat-name="dexterityDie" data-tooltip="All ranged weaponry.&#10;&#10;Includes: Bows, Crossbows, Slings, Throwing weapons.">
+          <strong>Marksman</strong>
           <div class="combat-skill-stat">
-            <div class="die-badge combat-skill-stat-code">CON</div>
-            <div class="die-badge combat-skill-die">d8</div>
+            <div class="die-badge combat-skill-stat-code">DEX</div>
+            <div class="die-badge combat-skill-die">d12</div>
           </div>
-          <input class="combat-skill-modifier" name="shieldcraftModifier" type="number" value="0" step="1" aria-label="Shieldcraft modifier">
+          <input class="combat-skill-modifier" name="marksmanModifier" type="number" value="0" step="1" aria-label="Marksman modifier">
+        </div>
+        <div class="combat-skill-row" data-stat-name="strengthDie" data-tooltip="Improvised and brutal close combat.&#10;&#10;Includes: Fists, Grapples, Clubs, Tavern weapons, Natural weapons.">
+          <strong>Brawling</strong>
+          <div class="combat-skill-stat">
+            <div class="die-badge combat-skill-stat-code">STR</div>
+            <div class="die-badge combat-skill-die">d10</div>
+          </div>
+          <input class="combat-skill-modifier" name="brawlingModifier" type="number" value="0" step="1" aria-label="Brawling modifier">
         </div>
       </div>
     </section>
   </div>
+  <div class="combat-tooltip" id="combat-tooltip" role="tooltip" aria-hidden="true" hidden></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -2185,7 +2211,8 @@
       {
         id: "field-hand",
         name: "Field-Hand",
-        category: "Farmer / Hard Worker",
+        category: "Prologue",
+        subcategory: "Farmer / Hard Worker",
         description: "Years of labor have hardened your body. Gain +2 maximum HP. When performing extended physical labor, you do not tire as quickly as others. Once per rest, reroll a failed Strength or Constitution check.",
         bonuses: [
           {
@@ -2197,92 +2224,128 @@
       {
         id: "mule-born",
         name: "Mule-Born",
-        category: "Farmer / Hard Worker",
+        category: "Prologue",
+        subcategory: "Farmer / Hard Worker",
         description: "You were raised carrying grain, stone, lumber, or water across long distances. Your carrying capacity is doubled. You ignore movement penalties from rough terrain while carrying supplies. Allies traveling with you recover fatigue faster."
       },
       {
         id: "harvest-sense",
         name: "Harvest Sense",
-        category: "Farmer / Hard Worker",
+        category: "Prologue",
+        subcategory: "Farmer / Hard Worker",
         description: "You instinctively understand weather, crops, and the land. Gain Advantage on checks involving farming, weather, or identifying unhealthy land. You can usually tell when something in nature feels wrong."
       },
       {
         id: "stubborn-stock",
         name: "Stubborn Stock",
-        category: "Farmer / Hard Worker",
+        category: "Prologue",
+        subcategory: "Farmer / Hard Worker",
         description: "You refuse to stay down. The first time you would become exhausted each day, ignore it. Once per combat, reduce incoming damage by 1."
       },
       {
         id: "quick-wit",
         name: "Quick Wit",
-        category: "Jokester / Social",
+        category: "Prologue",
+        subcategory: "Jokester / Social",
         description: "You always have something to say. Once per scene, reroll a failed Presence check. After a few minutes of conversation, most people remember you fondly."
       },
       {
         id: "fools-courage",
         name: "Fool's Courage",
-        category: "Jokester / Social",
+        category: "Prologue",
+        subcategory: "Jokester / Social",
         description: "You laugh in situations that should terrify you. Gain Advantage against fear effects. Once per session, turn a tense moment into a brief pause through humor or distraction."
       },
       {
         id: "tavern-soul",
         name: "Tavern Soul",
-        category: "Jokester / Social",
+        category: "Prologue",
+        subcategory: "Jokester / Social",
         description: "You know how to make strangers feel like friends. During rests, allies recover additional morale or stress. You can usually find rumors, gossip, or local trouble in any settlement."
       },
       {
         id: "mocking-tongue",
         name: "Mocking Tongue",
-        category: "Jokester / Social",
+        category: "Prologue",
+        subcategory: "Jokester / Social",
         description: "Your words cut deeper than blades sometimes. Once per combat, distract an enemy with a taunt. If successful, they suffer disadvantage on their next action."
       },
       {
         id: "waysinger",
         name: "Waysinger",
-        category: "Artist / Musician / Storyteller",
+        category: "Prologue",
+        subcategory: "Artist / Musician / Storyteller",
         description: "You carry songs, stories, and legends between settlements. People are naturally more willing to shelter or feed you. Once per session, recall a useful legend or historical detail. During rests, allies recover additional Resolve."
       },
       {
         id: "painter-of-moments",
         name: "Painter of Moments",
-        category: "Artist / Musician / Storyteller",
+        category: "Prologue",
+        subcategory: "Artist / Musician / Storyteller",
         description: "You notice beauty others overlook. Gain Advantage when observing details, emotions, or subtle changes. After studying a place or person, you may ask the GM one question about them."
       },
       {
         id: "dancing-footwork",
         name: "Dancing Footwork",
-        category: "Artist / Musician / Storyteller",
+        category: "Prologue",
+        subcategory: "Artist / Musician / Storyteller",
         description: "Years of performance taught you balance and movement. Gain Advantage on checks involving balance or graceful movement. Once per combat, reposition a short distance without provoking reactions."
       },
       {
         id: "silver-string",
         name: "Silver String",
-        category: "Artist / Musician / Storyteller",
+        category: "Prologue",
+        subcategory: "Artist / Musician / Storyteller",
         description: "Your music carries emotion unnaturally well. Once per scene, calm a frightened or angered individual through performance. Some claim your songs linger longer than they should."
       },
       {
         id: "village-healer",
         name: "Village Healer",
-        category: "Healer",
+        category: "Prologue",
+        subcategory: "Healer",
         description: "You know old remedies, stitching, and herbal care. During rests, allies recover additional HP. You may stabilize dying characters without a roll. Gain Advantage when treating sickness or wounds."
       },
       {
         id: "gentle-hands",
         name: "Gentle Hands",
-        category: "Healer",
+        category: "Prologue",
+        subcategory: "Healer",
         description: "People instinctively trust your care. Calm frightened individuals more easily. Once per session, remove panic or emotional distress from an ally through conversation or care."
       },
       {
         id: "bone-setter",
         name: "Bone-Setter",
-        category: "Healer",
+        category: "Prologue",
+        subcategory: "Healer",
         description: "You've treated hard injuries before. Broken limbs and major injuries heal faster under your care. Once per combat, reduce the severity of an ally's wound."
       },
       {
         id: "herbwise",
         name: "Herbwise",
-        category: "Healer",
+        category: "Prologue",
+        subcategory: "Healer",
         description: "You know the language of roots, leaves, and old brews. You can identify useful or dangerous plants. During travel, you may gather herbs to create simple remedies."
+      },
+      {
+        id: "quiet-step",
+        name: "Quiet Step",
+        category: "Prologue",
+        subcategory: "Hunter / Wilderness",
+        description: "You know how to move through brush, mud, and dry leaves without giving yourself away. Gain Advantage on stealth checks in natural terrain. During travel, you may help the group avoid leaving obvious tracks."
+      },
+      {
+        id: "beast-reader",
+        name: "Beast Reader",
+        category: "Prologue",
+        subcategory: "Hunter / Wilderness",
+        description: "You understand animal behavior through posture, scent, calls, and movement. Gain Advantage when calming, tracking, avoiding, or predicting beasts. Once per rest, identify whether a nearby creature is afraid, hunting, wounded, or territorial."
+      },
+      {
+        id: "weatherwise",
+        name: "Weatherwise",
+        category: "Prologue",
+        subcategory: "Hunter / Wilderness",
+        description: "You read the sky, wind, pressure, insects, and birds better than most. Gain Advantage when predicting weather or preparing for harsh conditions. Once per session, ask the GM what natural danger is likely before it arrives."
       }
     ];
     let feats = [...FALLBACK_FEATS];
@@ -2384,7 +2447,10 @@
     const combatSkillInputs = Array.from(document.querySelectorAll(".combat-skill-modifier"));
     const combatSkillRows = Array.from(document.querySelectorAll(".combat-skill-row"));
     const combatDrawer = document.getElementById("combat-drawer");
+    const combatPanel = document.getElementById("combat-panel");
     const combatTab = document.getElementById("combat-tab");
+    const combatTooltip = document.getElementById("combat-tooltip");
+    let activeCombatTooltipRow = null;
     const personaLists = {
       party: document.getElementById("party-persona-list"),
       others: document.getElementById("others-persona-list")
@@ -2638,6 +2704,7 @@
           id: String(feat.id || "").trim(),
           name: String(feat.name || "").trim(),
           category: String(feat.category || "General").trim(),
+          subcategory: String(feat.subcategory || "").trim(),
           description: String(feat.description || "").trim(),
           bonuses: normalizeBonuses(feat.bonuses)
         }))
@@ -3141,7 +3208,7 @@
       const level = getCharacterLevel();
       const levelsAfterFirst = level - 1;
       const totalFeats = getTotalFeatPicks(level);
-      const totalSkillPoints = 4 + (levelsAfterFirst * 3);
+      const totalSkillPoints = 4 + (levelsAfterFirst * 2);
       const totalCombatPoints = levelsAfterFirst;
       const trimmedFeats = enforceFeatBudget(totalFeats);
       const spentSkillPoints = enforcePointBudget(skillPointInputs, totalSkillPoints, changedInput);
@@ -3405,6 +3472,21 @@
       }
 
       featHoverPreview.innerHTML = `<h3>${feat.name}</h3><p>${feat.description}</p>`;
+    }
+
+    function getFeatCategory(feat) {
+      return feat.category || "General";
+    }
+
+    function getFeatSubcategory(feat) {
+      return feat.subcategory || "";
+    }
+
+    function appendFeatPickerHeading(text, className) {
+      const heading = document.createElement("div");
+      heading.className = className;
+      heading.textContent = text;
+      featPickerMenu.appendChild(heading);
     }
 
     function closeFeatPicker() {
@@ -3923,11 +4005,63 @@
     function closeCombatDrawer() {
       combatDrawer.classList.remove("is-open");
       combatTab.setAttribute("aria-expanded", "false");
+      hideCombatTooltip();
     }
 
     function toggleCombatDrawer() {
       const isOpen = combatDrawer.classList.toggle("is-open");
       combatTab.setAttribute("aria-expanded", String(isOpen));
+
+      if (!isOpen) {
+        hideCombatTooltip();
+      }
+    }
+
+    function positionCombatTooltip(row) {
+      if (!combatTooltip || combatTooltip.hidden) {
+        return;
+      }
+
+      const gap = 6;
+      const margin = 12;
+      const rowRect = row.getBoundingClientRect();
+      const tooltipRect = combatTooltip.getBoundingClientRect();
+      const hasLeftRoom = rowRect.left >= tooltipRect.width + gap + margin;
+      const left = hasLeftRoom
+        ? rowRect.left - tooltipRect.width - gap
+        : Math.min(window.innerWidth - tooltipRect.width - margin, Math.max(margin, rowRect.left));
+      const centeredTop = rowRect.top + (rowRect.height / 2) - (tooltipRect.height / 2);
+      const top = Math.min(
+        window.innerHeight - tooltipRect.height - margin,
+        Math.max(margin, centeredTop)
+      );
+
+      combatTooltip.style.left = `${left}px`;
+      combatTooltip.style.top = `${top}px`;
+    }
+
+    function showCombatTooltip(row) {
+      if (!combatTooltip) {
+        return;
+      }
+
+      activeCombatTooltipRow = row;
+      combatTooltip.textContent = row.dataset.tooltip || "";
+      combatTooltip.hidden = false;
+      combatTooltip.setAttribute("aria-hidden", "false");
+      positionCombatTooltip(row);
+      combatTooltip.classList.add("is-visible");
+    }
+
+    function hideCombatTooltip() {
+      if (!combatTooltip) {
+        return;
+      }
+
+      activeCombatTooltipRow = null;
+      combatTooltip.classList.remove("is-visible");
+      combatTooltip.hidden = true;
+      combatTooltip.setAttribute("aria-hidden", "true");
     }
 
     function animatePanelGrowth(panel, updatePanel) {
@@ -4081,7 +4215,13 @@
     }
 
     function buildFeatSelect() {
-      const availableFeats = feats.filter((feat) => !state.activeFeatIds.includes(feat.id));
+      const availableFeats = feats
+        .filter((feat) => !state.activeFeatIds.includes(feat.id))
+        .sort((first, second) => (
+          getFeatCategory(first).localeCompare(getFeatCategory(second))
+          || getFeatSubcategory(first).localeCompare(getFeatSubcategory(second))
+          || first.name.localeCompare(second.name)
+        ));
       const featPicksLeft = getTotalFeatPicks() - state.activeFeatIds.length;
       featPickerMenu.innerHTML = "";
 
@@ -4104,7 +4244,24 @@
       featPickerToggle.disabled = false;
       featPickerToggle.textContent = "Choose a feat";
 
+      let currentCategory = "";
+      let currentSubcategory = "";
+
       availableFeats.forEach((feat) => {
+        const category = getFeatCategory(feat);
+        const subcategory = getFeatSubcategory(feat);
+
+        if (category !== currentCategory) {
+          appendFeatPickerHeading(category, "feat-category-heading");
+          currentCategory = category;
+          currentSubcategory = "";
+        }
+
+        if (subcategory && subcategory !== currentSubcategory) {
+          appendFeatPickerHeading(subcategory, "feat-subcategory-heading");
+          currentSubcategory = subcategory;
+        }
+
         const option = document.createElement("button");
         option.type = "button";
         option.className = "feat-option";
@@ -4250,7 +4407,10 @@
         header.className = "feat-description-header";
 
         const title = document.createElement("div");
-        title.innerHTML = `<h3>${feat.name}</h3><span>${feat.category}</span>`;
+        const categoryLabel = getFeatSubcategory(feat)
+          ? `${getFeatCategory(feat)} / ${getFeatSubcategory(feat)}`
+          : getFeatCategory(feat);
+        title.innerHTML = `<h3>${feat.name}</h3><span>${categoryLabel}</span>`;
 
         const remove = document.createElement("button");
         remove.type = "button";
@@ -4451,6 +4611,17 @@
       }
     });
     combatTab.addEventListener("click", toggleCombatDrawer);
+    combatSkillRows.forEach((row) => {
+      row.addEventListener("mouseenter", () => showCombatTooltip(row));
+      row.addEventListener("mouseleave", hideCombatTooltip);
+      row.addEventListener("focusin", () => showCombatTooltip(row));
+      row.addEventListener("focusout", hideCombatTooltip);
+    });
+    combatPanel.addEventListener("scroll", () => {
+      if (activeCombatTooltipRow) {
+        positionCombatTooltip(activeCombatTooltipRow);
+      }
+    }, { passive: true });
     clearCharacterImageButton.addEventListener("click", () => {
       state.characterImage = "";
       state.characterImageVisible = true;
@@ -4615,6 +4786,9 @@
       }
 
       fitMantleMenuToSheet();
+      if (activeCombatTooltipRow) {
+        positionCombatTooltip(activeCombatTooltipRow);
+      }
       page.classList.add("is-resizing");
       window.clearTimeout(window.resizeSettleTimeout);
       window.resizeSettleTimeout = window.setTimeout(() => {
@@ -4624,6 +4798,9 @@
 
     window.addEventListener("scroll", () => {
       fitMantleMenuToSheet();
+      if (activeCombatTooltipRow) {
+        positionCombatTooltip(activeCombatTooltipRow);
+      }
     }, { passive: true });
 
     window.setInterval(() => {
