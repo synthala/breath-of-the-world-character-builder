@@ -1,6 +1,6 @@
 # Player Guide: Character Sheet
 
-Use this sheet to build and track a Breath of the World character. Cloud Save starts automatic profile sync for your character.
+Use this sheet to build and track a Breath of the World character. Cloud Save stores your character when you choose to save it.
 
 ## 1. Name And Level
 
@@ -62,12 +62,12 @@ Use this sheet to build and track a Breath of the World character. Cloud Save st
 
 - Use the menu button in the header to add or clear a character image.
 - Hover the eye button to preview the character image without the sheet boxes in the way.
-- The image is included in your cloud-synced character data.
+- The image is included when you use Cloud Save.
 
 ## 9. Saving And Loading
 
 - When the sheet opens, choose a cloud save or create a new character.
-- Use Cloud Save once to create or attach a cloud profile; after that, edits sync to that profile automatically.
+- Use Cloud Save to create, attach, or update a cloud profile. Character names update on the cloud profile when that field changes.
 - Use Cloud Load to switch to another saved character.
 - Use Reset to clear the sheet back to a fresh character.
 
