@@ -947,7 +947,7 @@
 
     .combat-panel {
       display: grid;
-      grid-template-rows: auto auto auto auto minmax(0, 1fr);
+      grid-template-rows: auto auto auto minmax(0, 1fr);
       gap: 14px;
       min-height: 0;
     }
@@ -993,10 +993,64 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
     }
 
+    .combat-vitals {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 174px;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .hp-box,
+    .speed-box {
+      border: 4px solid var(--line);
+      background: rgba(252, 251, 248, 0.58);
+    }
+
+    .hp-box {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
     .hp-row {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
+    }
+
+    .speed-box {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      justify-items: center;
+      min-height: 166px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .speed-box label {
+      margin: 0;
+      color: var(--ink);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .speed-box input {
+      align-self: center;
+      width: min(100%, 146px);
+      border-width: 0 0 2px;
+      background: transparent;
+      font-size: 4.2rem;
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .speed-unit {
+      color: var(--ink);
+      font-size: 0.84rem;
+      line-height: 1.25;
     }
 
     .healthbar {
@@ -1808,6 +1862,14 @@
         padding: 8px 6px;
       }
 
+      .combat-vitals {
+        grid-template-columns: 1fr;
+      }
+
+      .speed-box {
+        min-height: 132px;
+      }
+
       .equipment-builder-fields,
       .equipment-list-header,
       .equipment-item {
@@ -2202,20 +2264,29 @@
       <section class="panel combat-panel combat-tab-layout" id="combat-panel">
         <h2>Combat</h2>
         <p class="help">Max HP starts at 8 + half your Constitution die, then gains another half your Constitution die each level after, plus any feat bonuses.</p>
-        <div class="hp-row">
-          <div>
-            <label for="current-hp">Current HP</label>
-            <input id="current-hp" name="currentHp" type="number" value="14" min="0">
+        <div class="combat-vitals">
+          <div class="hp-box">
+            <div class="hp-row">
+              <div>
+                <label for="current-hp">Current HP</label>
+                <input id="current-hp" name="currentHp" type="number" value="14" min="0">
+              </div>
+              <div>
+                <label for="max-hp">Max HP</label>
+                <input id="max-hp" name="maxHp" type="number" value="14" min="1" readonly aria-readonly="true" title="Hover to see the Max HP breakdown.">
+              </div>
+            </div>
+            <div class="healthbar" aria-label="Health">
+              <div class="healthbar-fill" id="healthbar-fill"></div>
+            </div>
+            <p class="healthbar-text" id="healthbar-text">14 / 14 HP</p>
           </div>
-          <div>
-            <label for="max-hp">Max HP</label>
-            <input id="max-hp" name="maxHp" type="number" value="14" min="1" readonly aria-readonly="true" title="Hover to see the Max HP breakdown.">
+          <div class="speed-box">
+            <label for="speed">Speed</label>
+            <input id="speed" name="speed" type="number" value="30" min="0" step="5">
+            <div class="speed-unit">Feet per Turn</div>
           </div>
         </div>
-        <div class="healthbar" aria-label="Health">
-          <div class="healthbar-fill" id="healthbar-fill"></div>
-        </div>
-        <p class="healthbar-text" id="healthbar-text">14 / 14 HP</p>
         <div class="combat-weapons">
           <h2>Weapons</h2>
           <div class="equipment-list" id="combat-equipment-list"></div>
@@ -5149,6 +5220,7 @@
       document.querySelector('[name="intelligenceDie"]').value = "d4";
       document.querySelector('[name="wisdomDie"]').value = "d4";
       document.querySelector('[name="charismaDie"]').value = "d4";
+      document.querySelector('[name="speed"]').value = "30";
       updateDerivedMaxHp();
       currentHpInput.value = maxHpInput.value;
 
