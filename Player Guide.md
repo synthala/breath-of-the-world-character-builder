@@ -62,7 +62,7 @@ Use this sheet to build and track a Breath of the World character. Cloud Save st
 
 - Use the menu button in the header to add or clear a character image.
 - Hover the eye button to preview the character image without the sheet boxes in the way.
-- The image is included when you use Cloud Save.
+- Character images are compressed before they are stored and included when you use Cloud Save.
 
 ## 9. Saving And Loading
 

@@ -446,6 +446,102 @@
       min-height: 420px;
     }
 
+    .inventory-panel {
+      align-content: start;
+      gap: 14px;
+      grid-template-rows: auto auto minmax(260px, 1fr);
+    }
+
+    .equipment-builder {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      padding-bottom: 14px;
+      border-bottom: 2px solid rgba(17, 17, 17, 0.32);
+    }
+
+    .equipment-builder-fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(150px, 0.85fr) 86px auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .equipment-builder-fields button {
+      min-height: 42px;
+      padding-inline: 14px;
+    }
+
+    .equipment-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .equipment-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 2px solid var(--line);
+      background: rgba(252, 251, 248, 0.68);
+    }
+
+    .equipment-item strong,
+    .equipment-name-display,
+    .equipment-name-edit,
+    .equipment-item span {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .equipment-name-display {
+      display: inline;
+      width: auto;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: 700;
+      letter-spacing: 0;
+      line-height: 1.25;
+      text-align: left;
+      text-transform: none;
+    }
+
+    .equipment-name-display:hover,
+    .equipment-name-display:focus-visible {
+      text-decoration: underline;
+    }
+
+    .equipment-name-edit {
+      border-width: 0 0 2px;
+      background: transparent;
+      padding: 4px 0;
+      font-weight: 700;
+    }
+
+    .equipment-item span {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.3;
+    }
+
+    .equipment-remove {
+      width: 32px;
+      min-height: 32px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .combat-tab-layout {
+      display: grid;
+      min-height: 620px;
+    }
+
     .party-tab-layout {
       display: grid;
       gap: var(--panel-gap);
@@ -1669,6 +1765,15 @@
         padding: 8px 6px;
       }
 
+      .equipment-builder-fields,
+      .equipment-item {
+        grid-template-columns: 1fr;
+      }
+
+      .equipment-remove {
+        width: 100%;
+      }
+
       .notes-inventory-layout {
         min-height: 0;
       }
@@ -1796,6 +1901,7 @@
 
     <div class="sheet-tabs" role="tablist" aria-label="Character sheet sections">
       <button type="button" class="sheet-tab" id="character-sheet-tab" role="tab" aria-selected="true" aria-controls="character-sheet-panel">Character</button>
+      <button type="button" class="sheet-tab" id="combat-sheet-tab" role="tab" aria-selected="false" aria-controls="combat-sheet-panel">Combat</button>
       <button type="button" class="sheet-tab" id="notes-inventory-tab" role="tab" aria-selected="false" aria-controls="notes-inventory-panel">Notes &amp; Inventory</button>
       <button type="button" class="sheet-tab" id="party-others-tab" role="tab" aria-selected="false" aria-controls="party-others-panel">Party &amp; Others</button>
     </div>
@@ -2040,6 +2146,76 @@
     </div>
     </div>
 
+    <div class="sheet-tab-panel" id="combat-sheet-panel" role="tabpanel" aria-labelledby="combat-sheet-tab" hidden>
+      <section class="panel combat-panel combat-tab-layout" id="combat-panel">
+        <h2>Combat</h2>
+        <p class="help">Max HP starts at 8 + half your Constitution die, then gains another half your Constitution die each level after, plus any feat bonuses.</p>
+        <div class="hp-row">
+          <div>
+            <label for="current-hp">Current HP</label>
+            <input id="current-hp" name="currentHp" type="number" value="14" min="0">
+          </div>
+          <div>
+            <label for="max-hp">Max HP</label>
+            <input id="max-hp" name="maxHp" type="number" value="14" min="1" readonly aria-readonly="true" title="Hover to see the Max HP breakdown.">
+          </div>
+        </div>
+        <div class="healthbar" aria-label="Health">
+          <div class="healthbar-fill" id="healthbar-fill"></div>
+        </div>
+        <p class="healthbar-text" id="healthbar-text">14 / 14 HP</p>
+        <div class="combat-skills">
+          <h2>Combat Skills</h2>
+          <p class="help">Combat skills represent your training with different fighting styles. When you attack, roll the linked attribute die with the combat skill's modifier against the enemy's roll. If your attack succeeds, the enemy takes damage equal to the difference between the two rolls.</p>
+          <div class="combat-skills-header">
+            <div>Skill</div>
+            <div>Stat</div>
+            <div>Modifier</div>
+          </div>
+          <div class="combat-skill-row" data-stat-name="strengthDie" data-tooltip="Measured martial weapon mastery. Strong, disciplined, refined combat.&#10;&#10;Includes: Longswords, Greatswords, Katanas, Battle-ready swords, Some polearms.&#10;&#10;This is the warrior category.">
+            <strong>Bladecraft</strong>
+            <div class="combat-skill-stat">
+              <div class="die-badge combat-skill-stat-code">STR</div>
+              <div class="die-badge combat-skill-die">d10</div>
+            </div>
+            <input class="combat-skill-modifier" name="bladecraftModifier" type="number" value="0" step="1" aria-label="Bladecraft modifier">
+          </div>
+          <div class="combat-skill-row" data-stat-name="dexterityDie" data-tooltip="Speed, finesse, agility, precision, and technical skill.&#10;&#10;Includes: Rapiers, Daggers, Twin blades, Sabers, Whips, Fencing weapons, Fast spears.&#10;&#10;This is the graceful killer category.">
+            <strong>Duelist Arts</strong>
+            <div class="combat-skill-stat">
+              <div class="die-badge combat-skill-stat-code">DEX</div>
+              <div class="die-badge combat-skill-die">d12</div>
+            </div>
+            <input class="combat-skill-modifier" name="duelistArtsModifier" type="number" value="0" step="1" aria-label="Duelist Arts modifier">
+          </div>
+          <div class="combat-skill-row" data-stat-name="constitutionDie" data-tooltip="Heavy battlefield dominance and defensive warfare.&#10;&#10;Includes: Axes, Hammers, Shields, Halberds, Spears, Heavy weapons.">
+            <strong>Vanguard</strong>
+            <div class="combat-skill-stat">
+              <div class="die-badge combat-skill-stat-code">CON</div>
+              <div class="die-badge combat-skill-die">d8</div>
+            </div>
+            <input class="combat-skill-modifier" name="vanguardModifier" type="number" value="0" step="1" aria-label="Vanguard modifier">
+          </div>
+          <div class="combat-skill-row" data-stat-name="dexterityDie" data-tooltip="All ranged weaponry.&#10;&#10;Includes: Bows, Crossbows, Slings, Throwing weapons.">
+            <strong>Marksman</strong>
+            <div class="combat-skill-stat">
+              <div class="die-badge combat-skill-stat-code">DEX</div>
+              <div class="die-badge combat-skill-die">d12</div>
+            </div>
+            <input class="combat-skill-modifier" name="marksmanModifier" type="number" value="0" step="1" aria-label="Marksman modifier">
+          </div>
+          <div class="combat-skill-row" data-stat-name="strengthDie" data-tooltip="Improvised and brutal close combat.&#10;&#10;Includes: Fists, Grapples, Clubs, Tavern weapons, Natural weapons.">
+            <strong>Brawling</strong>
+            <div class="combat-skill-stat">
+              <div class="die-badge combat-skill-stat-code">STR</div>
+              <div class="die-badge combat-skill-die">d10</div>
+            </div>
+            <input class="combat-skill-modifier" name="brawlingModifier" type="number" value="0" step="1" aria-label="Brawling modifier">
+          </div>
+        </div>
+      </section>
+    </div>
+
     <div class="sheet-tab-panel" id="notes-inventory-panel" role="tabpanel" aria-labelledby="notes-inventory-tab" hidden>
     <div class="lower-layout notes-inventory-layout">
       <section class="panel">
@@ -2047,8 +2223,27 @@
         <textarea name="notes" placeholder="Character notes, story details, reminders"></textarea>
       </section>
 
-      <section class="panel">
+      <section class="panel inventory-panel">
         <h2>Inventory</h2>
+        <div class="equipment-builder">
+          <p class="help">Add weapons or equipment here. The modifier bonus is applied automatically and does not spend level-up points.</p>
+          <div class="equipment-builder-fields">
+            <div>
+              <label for="equipment-name">Equipment</label>
+              <input id="equipment-name" type="text" placeholder="Iron longsword">
+            </div>
+            <div>
+              <label for="equipment-target">Modifier</label>
+              <select id="equipment-target"></select>
+            </div>
+            <div>
+              <label for="equipment-modifier">Bonus</label>
+              <input id="equipment-modifier" type="number" value="0" min="0" step="1">
+            </div>
+            <button type="button" id="add-equipment">Add</button>
+          </div>
+          <div class="equipment-list" id="equipment-list"></div>
+        </div>
         <textarea name="inventory" placeholder="Gear, coin, keepsakes, supplies"></textarea>
       </section>
     </div>
@@ -2115,76 +2310,6 @@
       </div>
     </div>
 
-    <div class="combat-drawer" id="combat-drawer">
-      <button type="button" class="combat-tab" id="combat-tab" aria-expanded="false" aria-controls="combat-panel">Combat</button>
-      <section class="panel combat-panel" id="combat-panel">
-        <h2>Combat</h2>
-        <p class="help">Max HP starts at 8 + half your Constitution die, then gains another half your Constitution die each level after, plus any feat bonuses.</p>
-        <div class="hp-row">
-          <div>
-            <label for="current-hp">Current HP</label>
-            <input id="current-hp" name="currentHp" type="number" value="14" min="0">
-          </div>
-          <div>
-            <label for="max-hp">Max HP</label>
-            <input id="max-hp" name="maxHp" type="number" value="14" min="1" readonly aria-readonly="true" title="Hover to see the Max HP breakdown.">
-          </div>
-        </div>
-        <div class="healthbar" aria-label="Health">
-          <div class="healthbar-fill" id="healthbar-fill"></div>
-        </div>
-        <p class="healthbar-text" id="healthbar-text">14 / 14 HP</p>
-      <div class="combat-skills">
-        <h2>Combat Skills</h2>
-        <p class="help">Combat skills represent your training with different fighting styles. When you attack, roll the linked attribute die with the combat skill's modifier against the enemy's roll. If your attack succeeds, the enemy takes damage equal to the difference between the two rolls.</p>
-        <div class="combat-skills-header">
-          <div>Skill</div>
-          <div>Stat</div>
-          <div>Modifier</div>
-        </div>
-        <div class="combat-skill-row" data-stat-name="strengthDie" data-tooltip="Measured martial weapon mastery. Strong, disciplined, refined combat.&#10;&#10;Includes: Longswords, Greatswords, Katanas, Battle-ready swords, Some polearms.&#10;&#10;This is the warrior category.">
-          <strong>Bladecraft</strong>
-          <div class="combat-skill-stat">
-            <div class="die-badge combat-skill-stat-code">STR</div>
-            <div class="die-badge combat-skill-die">d10</div>
-          </div>
-          <input class="combat-skill-modifier" name="bladecraftModifier" type="number" value="0" step="1" aria-label="Bladecraft modifier">
-        </div>
-        <div class="combat-skill-row" data-stat-name="dexterityDie" data-tooltip="Speed, finesse, agility, precision, and technical skill.&#10;&#10;Includes: Rapiers, Daggers, Twin blades, Sabers, Whips, Fencing weapons, Fast spears.&#10;&#10;This is the graceful killer category.">
-          <strong>Duelist Arts</strong>
-          <div class="combat-skill-stat">
-            <div class="die-badge combat-skill-stat-code">DEX</div>
-            <div class="die-badge combat-skill-die">d12</div>
-          </div>
-          <input class="combat-skill-modifier" name="duelistArtsModifier" type="number" value="0" step="1" aria-label="Duelist Arts modifier">
-        </div>
-        <div class="combat-skill-row" data-stat-name="constitutionDie" data-tooltip="Heavy battlefield dominance and defensive warfare.&#10;&#10;Includes: Axes, Hammers, Shields, Halberds, Spears, Heavy weapons.">
-          <strong>Vanguard</strong>
-          <div class="combat-skill-stat">
-            <div class="die-badge combat-skill-stat-code">CON</div>
-            <div class="die-badge combat-skill-die">d8</div>
-          </div>
-          <input class="combat-skill-modifier" name="vanguardModifier" type="number" value="0" step="1" aria-label="Vanguard modifier">
-        </div>
-        <div class="combat-skill-row" data-stat-name="dexterityDie" data-tooltip="All ranged weaponry.&#10;&#10;Includes: Bows, Crossbows, Slings, Throwing weapons.">
-          <strong>Marksman</strong>
-          <div class="combat-skill-stat">
-            <div class="die-badge combat-skill-stat-code">DEX</div>
-            <div class="die-badge combat-skill-die">d12</div>
-          </div>
-          <input class="combat-skill-modifier" name="marksmanModifier" type="number" value="0" step="1" aria-label="Marksman modifier">
-        </div>
-        <div class="combat-skill-row" data-stat-name="strengthDie" data-tooltip="Improvised and brutal close combat.&#10;&#10;Includes: Fists, Grapples, Clubs, Tavern weapons, Natural weapons.">
-          <strong>Brawling</strong>
-          <div class="combat-skill-stat">
-            <div class="die-badge combat-skill-stat-code">STR</div>
-            <div class="die-badge combat-skill-die">d10</div>
-          </div>
-          <input class="combat-skill-modifier" name="brawlingModifier" type="number" value="0" step="1" aria-label="Brawling modifier">
-        </div>
-      </div>
-    </section>
-  </div>
   <div class="combat-tooltip" id="combat-tooltip" role="tooltip" aria-hidden="true" hidden></div>
   </div>
 
@@ -2203,6 +2328,8 @@
     const STORAGE_KEY = "breath-character-sheet-state";
     const CLOUD_PROFILE_KEY = "breath-character-sheet-cloud-profile";
     const CLOUD_FIELD_SYNC_DEBOUNCE_MS = 900;
+    const CHARACTER_IMAGE_MAX_EDGE = 1400;
+    const CHARACTER_IMAGE_QUALITY = 0.78;
     const FEATS_FILE = "feats.json";
     const MANTLES_FILE = "mantles.json";
 
@@ -2403,6 +2530,7 @@
       activeMantleId: "",
       characterImage: "",
       characterImageVisible: true,
+      equipment: [],
       personas: {
         party: [],
         others: []
@@ -2449,6 +2577,11 @@
     const combatPanel = document.getElementById("combat-panel");
     const combatTab = document.getElementById("combat-tab");
     const combatTooltip = document.getElementById("combat-tooltip");
+    const equipmentNameInput = document.getElementById("equipment-name");
+    const equipmentTargetSelect = document.getElementById("equipment-target");
+    const equipmentModifierInput = document.getElementById("equipment-modifier");
+    const addEquipmentButton = document.getElementById("add-equipment");
+    const equipmentList = document.getElementById("equipment-list");
     let activeCombatTooltipRow = null;
     const personaLists = {
       party: document.getElementById("party-persona-list"),
@@ -2739,6 +2872,21 @@
       };
     }
 
+    function normalizeEquipment(payloadEquipment) {
+      if (!Array.isArray(payloadEquipment)) {
+        return [];
+      }
+
+      return payloadEquipment
+        .map((equipment, index) => ({
+          id: String(equipment.id || `equipment-${index}-${Math.random().toString(36).slice(2, 8)}`),
+          name: String(equipment.name || "").trim(),
+          target: String(equipment.target || "").trim(),
+          amount: Math.max(0, Math.floor(Number(equipment.amount) || 0))
+        }))
+        .filter((equipment) => equipment.name && equipment.target);
+    }
+
     function normalizePersonaList(personas) {
       if (!Array.isArray(personas)) {
         return [];
@@ -2817,6 +2965,7 @@
         activeMantleId: state.activeMantleId,
         characterImage: state.characterImage,
         characterImageVisible: state.characterImageVisible,
+        equipment: state.equipment,
         personas: state.personas
       };
 
@@ -2835,6 +2984,7 @@
         activeMantleId: state.activeMantleId,
         characterImage: state.characterImage,
         characterImageVisible: state.characterImageVisible,
+        equipment: state.equipment,
         personas: state.personas
       };
     }
@@ -2843,6 +2993,7 @@
       buildFeatSelect();
       buildMantleSelect();
       renderCharacterImage();
+      renderEquipment();
       renderActiveFeats();
       renderFeatDescriptions();
       renderMantleDescription();
@@ -2861,6 +3012,7 @@
       state.activeMantleId = typeof payload.activeMantleId === "string" ? payload.activeMantleId : "";
       state.characterImage = typeof payload.characterImage === "string" ? payload.characterImage : "";
       state.characterImageVisible = typeof payload.characterImageVisible === "boolean" ? payload.characterImageVisible : true;
+      state.equipment = normalizeEquipment(payload.equipment);
       state.personas = normalizePersonas(payload.personas);
       refreshSheetFromState();
     }
@@ -3346,6 +3498,184 @@
       });
     }
 
+    function getModifierLabel(target) {
+      const input = document.querySelector(`[name="${target}"]`);
+
+      if (!input) {
+        return target;
+      }
+
+      const combatRow = input.closest(".combat-skill-row");
+      const skillRow = input.closest(".skill-row");
+      const label = combatRow?.querySelector("strong") || skillRow?.querySelector(".skill-name strong");
+
+      return label ? label.textContent.trim() : target;
+    }
+
+    function buildEquipmentTargetOptions() {
+      if (!equipmentTargetSelect) {
+        return;
+      }
+
+      const selectedValue = equipmentTargetSelect.value;
+      equipmentTargetSelect.innerHTML = "";
+
+      combatSkillInputs.forEach((input) => {
+        const option = document.createElement("option");
+        option.value = input.name;
+        option.textContent = getModifierLabel(input.name);
+        equipmentTargetSelect.appendChild(option);
+      });
+
+      if (selectedValue && Array.from(equipmentTargetSelect.options).some((option) => option.value === selectedValue)) {
+        equipmentTargetSelect.value = selectedValue;
+      }
+    }
+
+    function renderEquipment() {
+      if (!equipmentList) {
+        return;
+      }
+
+      buildEquipmentTargetOptions();
+      equipmentList.innerHTML = "";
+
+      if (state.equipment.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "persona-empty";
+        empty.textContent = "No equipment bonuses yet.";
+        equipmentList.appendChild(empty);
+        return;
+      }
+
+      state.equipment.forEach((equipment) => {
+        const item = document.createElement("article");
+        item.className = "equipment-item";
+        item.dataset.equipmentId = equipment.id;
+
+        const details = document.createElement("div");
+        details.className = "equipment-details";
+        const name = document.createElement("button");
+        name.type = "button";
+        name.className = "equipment-name-display";
+        name.textContent = equipment.name;
+        name.setAttribute("aria-label", `Edit ${equipment.name}`);
+        name.addEventListener("click", () => editEquipmentName(equipment.id));
+        const bonus = document.createElement("span");
+        bonus.textContent = `+${equipment.amount} ${getModifierLabel(equipment.target)}`;
+        details.appendChild(name);
+        details.appendChild(document.createElement("br"));
+        details.appendChild(bonus);
+
+        const badge = document.createElement("span");
+        badge.className = "sheet-bonus";
+        badge.textContent = `+${equipment.amount}`;
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "equipment-remove";
+        remove.textContent = "x";
+        remove.setAttribute("aria-label", `Remove ${equipment.name}`);
+        remove.addEventListener("click", () => removeEquipment(equipment.id));
+
+        item.appendChild(details);
+        item.appendChild(badge);
+        item.appendChild(remove);
+        equipmentList.appendChild(item);
+      });
+    }
+
+    function addEquipment() {
+      const name = equipmentNameInput.value.trim();
+      const target = equipmentTargetSelect.value;
+      const amount = Math.max(0, Math.floor(Number(equipmentModifierInput.value) || 0));
+
+      if (!name || !target) {
+        setStatus("Name the equipment and choose a modifier.");
+        return;
+      }
+
+      state.equipment.push({
+        id: `equipment-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name,
+        target,
+        amount
+      });
+      equipmentNameInput.value = "";
+      equipmentModifierInput.value = "0";
+      renderEquipment();
+      applySheetBonuses();
+      updateLevelProgression();
+      saveState();
+      setStatus("Equipment added.");
+    }
+
+    function removeEquipment(equipmentId) {
+      state.equipment = state.equipment.filter((equipment) => equipment.id !== equipmentId);
+      renderEquipment();
+      applySheetBonuses();
+      updateLevelProgression();
+      saveState();
+    }
+
+    function updateEquipment(equipmentId, updates) {
+      const equipment = state.equipment.find((entry) => entry.id === equipmentId);
+
+      if (!equipment) {
+        return;
+      }
+
+      Object.assign(equipment, updates);
+      saveState();
+    }
+
+    function editEquipmentName(equipmentId) {
+      const equipment = state.equipment.find((entry) => entry.id === equipmentId);
+
+      if (!equipment) {
+        return;
+      }
+
+      renderEquipment();
+
+      const item = equipmentList.querySelector(`[data-equipment-id="${equipmentId}"]`);
+      const details = item?.querySelector(".equipment-details");
+
+      if (!details) {
+        return;
+      }
+
+      const nameInput = document.createElement("input");
+      nameInput.className = "equipment-name-edit";
+      nameInput.type = "text";
+      nameInput.value = equipment.name;
+      nameInput.setAttribute("aria-label", "Equipment name");
+
+      const finishEditing = () => {
+        const nextName = nameInput.value.trim() || equipment.name;
+        updateEquipment(equipmentId, { name: nextName });
+        renderEquipment();
+      };
+
+      nameInput.addEventListener("blur", finishEditing);
+      nameInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          nameInput.blur();
+        }
+
+        if (event.key === "Escape") {
+          event.preventDefault();
+          renderEquipment();
+        }
+      });
+
+      details.querySelector(".equipment-name-display")?.replaceWith(nameInput);
+      nameInput.focus();
+      nameInput.select();
+    }
+
+
     function clearSheetBonuses() {
       [...skillPointInputs, ...combatSkillInputs].forEach((input) => {
         const row = input.closest(".skill-row, .combat-skill-row");
@@ -3389,6 +3719,14 @@
             amount: bonus.amount,
             sourceName: feat.name
           });
+        });
+      });
+
+      state.equipment.forEach((equipment) => {
+        bonuses.push({
+          target: equipment.target,
+          amount: equipment.amount,
+          sourceName: equipment.name
         });
       });
 
@@ -3983,12 +4321,21 @@
     }
 
     function closeCombatDrawer() {
+      if (!combatDrawer || !combatTab) {
+        hideCombatTooltip();
+        return;
+      }
+
       combatDrawer.classList.remove("is-open");
       combatTab.setAttribute("aria-expanded", "false");
       hideCombatTooltip();
     }
 
     function toggleCombatDrawer() {
+      if (!combatDrawer || !combatTab) {
+        return;
+      }
+
       const isOpen = combatDrawer.classList.toggle("is-open");
       combatTab.setAttribute("aria-expanded", String(isOpen));
 
@@ -4329,18 +4676,106 @@
       toggleCharacterImageButton.title = state.characterImageVisible ? "Hide character image" : "Show character image";
     }
 
-    function setCharacterImage(file) {
-      const reader = new FileReader();
+    function getDataUrlByteSize(dataUrl) {
+      const encoded = String(dataUrl || "").split(",")[1] || "";
+      const padding = encoded.endsWith("==") ? 2 : encoded.endsWith("=") ? 1 : 0;
 
-      reader.onload = () => {
-        state.characterImage = String(reader.result || "");
+      return Math.max(0, Math.floor((encoded.length * 3) / 4) - padding);
+    }
+
+    function formatImageSize(bytes) {
+      if (bytes >= 1024 * 1024) {
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      }
+
+      return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onerror = () => reject(new Error("Image could not be read."));
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function loadImage(dataUrl) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+
+        image.onerror = () => reject(new Error("Image could not be loaded."));
+        image.onload = () => resolve(image);
+        image.src = dataUrl;
+      });
+    }
+
+    function canvasToDataUrl(canvas, type, quality) {
+      return new Promise((resolve) => {
+        if (!canvas.toBlob) {
+          resolve(canvas.toDataURL(type, quality));
+          return;
+        }
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            resolve(canvas.toDataURL(type, quality));
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.readAsDataURL(blob);
+        }, type, quality);
+      });
+    }
+
+    async function compressCharacterImage(file) {
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Choose an image file.");
+      }
+
+      const sourceDataUrl = await readFileAsDataUrl(file);
+      const image = await loadImage(sourceDataUrl);
+      const scale = Math.min(1, CHARACTER_IMAGE_MAX_EDGE / Math.max(image.naturalWidth, image.naturalHeight));
+      const width = Math.max(1, Math.round(image.naturalWidth * scale));
+      const height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      canvas.width = width;
+      canvas.height = height;
+      context.fillStyle = "#f7f3eb";
+      context.fillRect(0, 0, width, height);
+      context.drawImage(image, 0, 0, width, height);
+
+      return {
+        dataUrl: await canvasToDataUrl(canvas, "image/jpeg", CHARACTER_IMAGE_QUALITY),
+        sourceBytes: file.size || getDataUrlByteSize(sourceDataUrl)
+      };
+    }
+
+    async function setCharacterImage(file) {
+      try {
+        setStatus("Compressing image...");
+        const { dataUrl, sourceBytes } = await compressCharacterImage(file);
+        const compressedBytes = getDataUrlByteSize(dataUrl);
+
+        state.characterImage = dataUrl;
         state.characterImageVisible = true;
         renderCharacterImage();
         saveState();
-        setStatus("Character image added.");
-      };
 
-      reader.readAsDataURL(file);
+        if (sourceBytes > compressedBytes) {
+          setStatus(`Image compressed to ${formatImageSize(compressedBytes)}.`);
+        } else {
+          setStatus(`Image stored at ${formatImageSize(compressedBytes)}.`);
+        }
+      } catch (error) {
+        console.error("Character image compression failed.", error);
+        setStatus(error.message || "Image could not be loaded.");
+      }
     }
 
     function removeFeat(featId) {
@@ -4492,11 +4927,13 @@
       state.activeMantleId = "";
       state.characterImage = "";
       state.characterImageVisible = true;
+      state.equipment = [];
       state.personas = normalizePersonas();
       characterImageInput.value = "";
       buildFeatSelect();
       buildMantleSelect();
       renderCharacterImage();
+      renderEquipment();
       renderActiveFeats();
       renderFeatDescriptions();
       renderMantleDescription();
@@ -4590,18 +5027,31 @@
         closeActionsMenu();
       }
     });
-    combatTab.addEventListener("click", toggleCombatDrawer);
+    combatTab?.addEventListener("click", toggleCombatDrawer);
     combatSkillRows.forEach((row) => {
       row.addEventListener("mouseenter", () => showCombatTooltip(row));
       row.addEventListener("mouseleave", hideCombatTooltip);
       row.addEventListener("focusin", () => showCombatTooltip(row));
       row.addEventListener("focusout", hideCombatTooltip);
     });
-    combatPanel.addEventListener("scroll", () => {
+    combatPanel?.addEventListener("scroll", () => {
       if (activeCombatTooltipRow) {
         positionCombatTooltip(activeCombatTooltipRow);
       }
     }, { passive: true });
+    addEquipmentButton?.addEventListener("click", addEquipment);
+    equipmentNameInput?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addEquipment();
+      }
+    });
+    equipmentModifierInput?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addEquipment();
+      }
+    });
     clearCharacterImageButton.addEventListener("click", () => {
       state.characterImage = "";
       state.characterImageVisible = true;
